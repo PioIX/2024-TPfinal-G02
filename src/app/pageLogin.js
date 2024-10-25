@@ -1,15 +1,12 @@
 export default function Login() {
   return (
-    <main style={{
-      background: 'URL(FlappyFondo.png)',
-    }}>
+    <main>
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       height: '100vh',
-      // backgroundImage: 'url(/flappy.png)',
       backgroundSize: 'cover',
       padding: '20px',
     }}>
