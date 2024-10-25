@@ -1,4 +1,7 @@
 export default function Login() {
+    function alert() {
+      alert("Hola")
+    }
     return (
       <main style={{
         backgroundImage: 'URL(flappy.png)',
@@ -17,7 +20,7 @@ export default function Login() {
         <form style={{ marginBottom: '20px' }}>
           <input type="text" placeholder="Usuario" required style={{ marginBottom: '10px', padding: '8px', width: '200px' }} />
           <input type="password" placeholder="Contraseña" required style={{ marginBottom: '10px', padding: '8px', width: '200px' }} />
-          <button type="submit" style={{ padding: '8px', width: '200px', backgroundColor: '#0070f3', color: 'black' }}>Iniciar Sesión</button>
+          <button type="submit" style={{ padding: '8px', width: '200px', backgroundColor: '#0070f3', color: 'black' }} onClick={alert}>Iniciar Sesión</button>
           </form>
           <h2 style={{color : "black"}}>Crear Cuenta</h2>
           <form>
