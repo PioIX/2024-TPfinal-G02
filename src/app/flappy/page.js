@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 export default function Home() {
   const [yPosition, setYPosition] = useState(0); 
   const [velocity, setVelocity] = useState(0); 
-  const [obstacleX, setObstacleX] = useState(window.innerWidth); // Inicializar el obstáculo en el borde derecho
+  const [obstacleX, setObstacleX] = useState(window.innerWidth);
   const gravity = 0.5; 
   const obstacleWidth = 50;
-  const obstacleHeight = 200; // Altura del obstáculo
-  const gap = 150; // Espacio entre los obstáculos
+  const obstacleHeight = 200; 
+  const gap = 400; 
 
   const jump = () => {
     setVelocity(-10);
@@ -28,11 +28,11 @@ export default function Home() {
         return newY < 0 ? 0 : newY; 
       });
 
-      // Mover el obstáculo hacia la izquierda
+     
       setObstacleX((prev) => {
-        const newX = prev - 5; // Velocidad del obstáculo
+        const newX = prev - 5; 
         if (newX < -obstacleWidth) {
-          // Resetear la posición del obstáculo si sale de la pantalla
+         
           return window.innerWidth;
         }
         return newX;
@@ -48,30 +48,27 @@ export default function Home() {
   }, [velocity, gravity]);
 
   const isColliding = () => {
-    const birdBottom = yPosition + 50; // Parte inferior del círculo
-    const birdTop = yPosition; // Parte superior del círculo
-    const birdLeft = window.innerWidth / 2 - 25; // Parte izquierda del círculo
-    const birdRight = window.innerWidth / 2 + 25; // Parte derecha del círculo
+    const birdBottom = yPosition + 50; 
+    const birdTop = yPosition; 
+    const birdLeft = window.innerWidth / 2 - 25;
+    const birdRight = window.innerWidth / 2 + 25; 
 
-    // Verificar colisión con el obstáculo inferior
+    
     const bottomObstacleTop = window.innerHeight - obstacleHeight;
     const bottomObstacleBottom = bottomObstacleTop + obstacleHeight;
 
-    // Verificar colisión con el obstáculo superior
-    const topObstacleBottom = bottomObstacleTop - gap; // Ajustar la posición del obstáculo superior
+    
+    const topObstacleBottom = bottomObstacleTop - gap; 
 
-    return (
-      (obstacleX < birdRight &&
-      obstacleX + obstacleWidth > birdLeft &&
-      (birdBottom > bottomObstacleTop)) || // Colisión con el obstáculo inferior
-      (obstacleX < birdRight &&
-      obstacleX + obstacleWidth > birdLeft &&
-      (birdTop < topObstacleBottom)) // Colisión con el obstáculo superior
-    );
+    
+    const hitBottomObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdBottom > bottomObstacleTop;
+    const hitTopObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdTop < topObstacleBottom;
+
+    return hitBottomObstacle || hitTopObstacle;
   };
 
   if (isColliding()) {
-    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>; // Pantalla de game over
+    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
   }
 
   return (
