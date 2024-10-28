@@ -16,7 +16,7 @@ export default function Login() {
         <input type="password" placeholder="Contraseña" required style={{ marginBottom: '10px', padding: '8px', width: '200px' }} />
         <button type="submit" style={{ padding: '8px', width: '200px', backgroundColor: '#0070f3', color: 'black' }}>Iniciar Sesión</button>
         </form>
-        <h2 style={{color : "black"}}>Crear Cuenta</h2>
+        <h1 style={{color : "black"}}>Crear Cuenta</h1>
         <form>
           <input type="text" placeholder="Usuario" required style={{ marginBottom: '10px', padding: '8px', width: '200px' }} />
           <input type="password" placeholder="Contraseña" required style={{ marginBottom: '10px', padding: '8px', width: '200px' }} />
