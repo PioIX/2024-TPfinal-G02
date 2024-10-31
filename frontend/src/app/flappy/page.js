@@ -6,10 +6,25 @@ export default function Home() {
   const [yPosition, setYPosition] = useState(0); 
   const [velocity, setVelocity] = useState(0); 
   const [obstacleX, setObstacleX] = useState(window.innerWidth);
+  const [obstacleIndex, setObstacleIndex] = useState(0); // Índice del obstáculo actual
   const gravity = 0.5; 
   const obstacleWidth = 50;
-  const obstacleHeight = 200; 
-  const gap = 400; 
+  const gap = 300; 
+
+  // Configuración de obstáculos con alturas incrementadas en 20
+  const obstacleConfigurations = [
+    { topHeight: 290, bottomHeight: 290 }, // Primer obstáculo
+    { topHeight: 410, bottomHeight: 170 }, // Segundo obstáculo
+    { topHeight: 170, bottomHeight: 410 }, // Tercer obstáculo
+    { topHeight: 470, bottomHeight: 110 }, // Cuarto obstáculo
+    { topHeight: 110, bottomHeight: 470 }, // Quinto obstáculo
+    { topHeight: 510, bottomHeight: 70 },  // Sexto obstáculo
+    { topHeight: 70, bottomHeight: 510 },   // Séptimo obstáculo
+    { topHeight: 370, bottomHeight: 210 },  // Octavo obstáculo
+    { topHeight: 170, bottomHeight: 410 },  // Noveno obstáculo
+    { topHeight: 150, bottomHeight: 430 },  // Décimo obstáculo
+    { topHeight: 430, bottomHeight: 150 },  // Undécimo obstáculo
+  ];
 
   const jump = () => {
     setVelocity(-10);
@@ -28,11 +43,10 @@ export default function Home() {
         return newY < 0 ? 0 : newY; 
       });
 
-     
       setObstacleX((prev) => {
         const newX = prev - 5; 
         if (newX < -obstacleWidth) {
-         
+          setObstacleIndex((prevIndex) => (prevIndex + 1) % obstacleConfigurations.length); // Cambiar al siguiente obstáculo
           return window.innerWidth;
         }
         return newX;
@@ -53,15 +67,11 @@ export default function Home() {
     const birdLeft = window.innerWidth / 2 - 25;
     const birdRight = window.innerWidth / 2 + 25; 
 
-    
-    const bottomObstacleTop = window.innerHeight - obstacleHeight;
-    const bottomObstacleBottom = bottomObstacleTop + obstacleHeight;
+    const { topHeight, bottomHeight } = obstacleConfigurations[obstacleIndex];
 
-    
-    const topObstacleBottom = bottomObstacleTop - gap; 
-
-    
+    const bottomObstacleTop = window.innerHeight - bottomHeight;
     const hitBottomObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdBottom > bottomObstacleTop;
+    const topObstacleBottom = bottomObstacleTop - gap; 
     const hitTopObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdTop < topObstacleBottom;
 
     return hitBottomObstacle || hitTopObstacle;
@@ -71,6 +81,8 @@ export default function Home() {
     return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
   }
 
+  const { topHeight, bottomHeight } = obstacleConfigurations[obstacleIndex];
+
   return (
     <div style={styles.container}>
       <div style={{ ...styles.circle, top: `${yPosition}px` }} />
@@ -79,17 +91,21 @@ export default function Home() {
         left: `${obstacleX}px`,
         bottom: '0',
         width: `${obstacleWidth}px`,
-        height: `${obstacleHeight}px`,
-        backgroundColor: 'green',
+        height: `${bottomHeight}px`,
+        backgroundColor: '#0f9d58', // Color verde
+        border: '3px solid black', // Línea negra alrededor
+        boxSizing: 'border-box', // Incluye el borde en el tamaño total
       }} />
       <div style={{
         position: 'absolute',
         left: `${obstacleX}px`,
         top: '0',
         width: `${obstacleWidth}px`,
-        height: `${obstacleHeight}px`,
-        backgroundColor: 'green',
-        bottom: `calc(100vh - ${obstacleHeight + gap}px)`,
+        height: `${topHeight}px`,
+        backgroundColor: '#0f9d58', // Color verde
+        border: '3px solid black', // Línea negra alrededor
+        boxSizing: 'border-box', // Incluye el borde en el tamaño total
+        bottom: `calc(100vh - ${bottomHeight + gap}px)`,
       }} />
     </div>
   );
