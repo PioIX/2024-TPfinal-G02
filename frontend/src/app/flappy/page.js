@@ -11,7 +11,7 @@ export default function Home() {
   const gravity = 0.5; 
   const obstacleWidth = 65; 
   const gap = 300; 
-  const [speed, setSpeed] = useState(7); // Velocidad inicial
+  const [speed, setSpeed] = useState(7); 
 
   const obstacleConfigurations = [
     { topHeight: 310, bottomHeight: 310, color: '#0f9d58' },
@@ -157,7 +157,6 @@ const styles = {
     top: '0',
     width: '70px',  // Ancho de las llamas
     height: '50px', // Alto de las llamas
-    background: 'url(/flames.png) no-repeat center center', // Asegúrate de tener esta imagen
     backgroundSize: 'contain',
     transform: 'translateX(-50%)',
   },
