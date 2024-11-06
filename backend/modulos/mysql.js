@@ -8,11 +8,11 @@ const SQL_CONFIGURATION_DATA =
 {
 	host: "10.1.5.205", //IP privada del servidor del colegio
 	//host: "186.18.137.196", //IP pública del servidor del colegio
-	user: "elNombreDeUsuarioDeTuGrupo",
-	password: "laContraseñaDeTuGrupo",
-	database: "elNombreDeLaDatabaseDeTuGrupo",
-	port: 3306,
-	charset: 'UTF8_GENERAL_CI'
+	user: "2024-5AINF-G10",
+    password: "sanlorenzo123",
+    database: "2024-5AINF-G10",
+    port: 3306,
+    charset: 'UTF8_GENERAL_CI'
 }
 
 /**
