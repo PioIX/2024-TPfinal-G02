@@ -3,55 +3,62 @@
 import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [yPosition, setYPosition] = useState(0); // Valor inicial temporal
+  const [yPosition, setYPosition] = useState(0);
   const [velocity, setVelocity] = useState(0);
   const [obstacleX, setObstacleX] = useState(0);
   const [obstacleIndex, setObstacleIndex] = useState(0);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
-<<<<<<< HEAD
-  const gravity = 0.5; 
-  const obstacleWidth = 65; 
-  const gap = 300; 
-  const [speed, setSpeed] = useState(7); 
-=======
-  const gravity = 0.5; // La gravedad hace que el círculo caiga
-  const obstacleWidth = 65;
+  const [gameOver, setGameOver] = useState(false);
   const [speed, setSpeed] = useState(7);
-  const [gameOver, setGameOver] = useState(false); // Estado para verificar si el juego ha terminado
->>>>>>> aafa2ffdefa8ce4af51fda3e6e1491c6c96382a5
+  const [gravity, setGravity] = useState(0.5);
+  const [gameStarted, setGameStarted] = useState(false); // Estado para controlar el inicio del juego
+  const [countdown, setCountdown] = useState(3); // Estado para el contador de 3 segundos
+  const obstacleWidth = 60;
 
   const obstacleConfigurations = [
-    { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 170 },  // Verde
-    { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 170 },  // Naranja
-    { topHeight: 190, bottomHeight: 430, color: '#e91e63', gap: 170 },  // Rosa
-    { topHeight: 360, bottomHeight: 260, color: '#9e9e9e', gap: 170 },  // Gris
-    { topHeight: 390, bottomHeight: 230, color: '#3f51b5', gap: 170 },  // Azul oscuro
-    { topHeight: 100, bottomHeight: 520, color: '#f44336', gap: 170 },  // Rojo
-    { topHeight: 130, bottomHeight: 490, color: '#9c27b0', gap: 170 },  // Púrpura claro
-    { topHeight: 190, bottomHeight: 430, color: '#2196f3', gap: 170 },  // Azul claro
-    { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 170 },  // Naranja
-    { topHeight: 450, bottomHeight: 170, color: '#8bc34a', gap: 170 },  // Verde claro
-    { topHeight: 380, bottomHeight: 220, color: '#4caf50', gap: 170 },  // Verde pasto
-    { topHeight: 450, bottomHeight: 170, color: '#ffeb3b', gap: 170 },  // Amarillo
-    { topHeight: 410, bottomHeight: 210, color: '#673ab7', gap: 170 },  // Púrpura
-    { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 170 },  // Naranja
-    { topHeight: 520, bottomHeight: 100, color: '#ffeb3b', gap: 170 },  // Amarillo
-    { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 170 },  // Naranja
+    { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 164 },
+    { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 164 },
+    { topHeight: 190, bottomHeight: 430, color: '#e91e63', gap: 164 },
+    { topHeight: 360, bottomHeight: 260, color: '#9e9e9e', gap: 164 },
+    { topHeight: 390, bottomHeight: 230, color: '#3f51b5', gap: 164 },
+    { topHeight: 100, bottomHeight: 520, color: '#f44336', gap: 164 },
+    { topHeight: 130, bottomHeight: 490, color: '#9c27b0', gap: 164 },
+    { topHeight: 190, bottomHeight: 430, color: '#2196f3', gap: 164 },
+    { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 164 },
+    { topHeight: 450, bottomHeight: 170, color: '#8bc34a', gap: 164 },
+    { topHeight: 380, bottomHeight: 220, color: '#4caf50', gap: 164 },
+    { topHeight: 450, bottomHeight: 170, color: '#ffeb3b', gap: 164 },
+    { topHeight: 410, bottomHeight: 210, color: '#673ab7', gap: 164 },
+    { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 164 },
+    { topHeight: 520, bottomHeight: 100, color: '#ffeb3b', gap: 164 },
+    { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 164 },
   ];
 
   const jump = () => {
-    setVelocity(-10); // El círculo sube cuando se hace clic
+    setVelocity(-9); // El círculo sube cuando se hace clic
   };
 
-  // Establecer la posición inicial del círculo solo una vez al cargar la página
   useEffect(() => {
     setYPosition(window.innerHeight / 2 - 25); // El círculo comienza en el medio vertical de la pantalla
   }, []);
 
   useEffect(() => {
     const handleClick = () => jump();
-
     window.addEventListener('click', handleClick);
+
+    // Contador de 3 segundos antes de comenzar el juego
+    if (!gameStarted) {
+      if (countdown > 0) {
+        const timer = setInterval(() => {
+          setCountdown((prev) => prev - 1);
+        }, 1000); // Disminuir cada segundo
+        return () => clearInterval(timer); // Limpiar el temporizador cuando el componente se desmonte
+      } else {
+        setGameStarted(true); // Comienza el juego cuando el contador llega a 0
+        setCountdown(0); // Para asegurarnos de que el contador no vuelva a mostrarse
+        jump(); // Realiza un salto automático cuando el juego comienza
+      }
+    }
 
     const gameLoop = () => {
       if (gameOver) return; // Si el juego ha terminado, no actualices nada
@@ -90,7 +97,7 @@ export default function Home() {
       window.removeEventListener('click', handleClick);
       clearInterval(interval);
     };
-  }, [velocity, gravity, speed, gameOver]);
+  }, [velocity, gravity, speed, gameOver, gameStarted, countdown]);
 
   useEffect(() => {
     if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0) {
@@ -101,8 +108,8 @@ export default function Home() {
   const isColliding = () => {
     const birdBottom = yPosition + 50; // Parte inferior del círculo
     const birdTop = yPosition; // Parte superior del círculo
-    const birdLeft = window.innerWidth / 2 - 25;
-    const birdRight = window.innerWidth / 2 + 25;
+    const birdLeft = window.innerWidth * 0.60 - 25; // Calculamos la posición horizontal en base al 60% de la pantalla
+    const birdRight = birdLeft + 50; // Ancho del círculo
 
     const { topHeight, bottomHeight, gap } = obstacleConfigurations[obstacleIndex];
 
@@ -115,7 +122,21 @@ export default function Home() {
   };
 
   if (gameOver || isColliding()) {
-    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>; // Cambia el fondo a rojo cuando colisiona o toca el techo
+    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
+  }
+
+  // Mostrar el contador antes de comenzar el juego
+  if (!gameStarted && countdown > 0) {
+    return (
+      <div style={styles.container}>
+        <div style={{
+          ...styles.countdown,
+          top: `${yPosition - 60}px`, // Ubicamos el contador arriba del "flappy"
+        }}>
+          {countdown}
+        </div>
+      </div>
+    );
   }
 
   const { topHeight, bottomHeight, color, gap } = obstacleConfigurations[obstacleIndex];
@@ -125,7 +146,8 @@ export default function Home() {
       <div style={{
         ...styles.circle,
         top: `${yPosition}px`, // Controla la posición vertical del círculo
-        backgroundColor: 'red',  // El color del círculo es rojo
+        backgroundColor: 'red',
+        left: '60%', // Mueve el círculo un poco más a la derecha
       }} />
       <div style={{
         position: 'absolute',
@@ -163,22 +185,18 @@ const styles = {
   circle: {
     position: 'absolute',
     left: '50%',
-    top: '0', // El círculo empieza en la parte superior
+    top: '0',
     width: '50px',
     height: '50px',
     borderRadius: '50%',
     transform: 'translateX(-50%)',
   },
-<<<<<<< HEAD
-  flames: {
+  countdown: {
     position: 'absolute',
+    fontSize: '100px',
+    color: 'white',
+    fontWeight: 'bold',
     left: '50%',
-    top: '0',
-    width: '70px',  // Ancho de las llamas
-    height: '50px', // Alto de las llamas
-    backgroundSize: 'contain',
     transform: 'translateX(-50%)',
   },
-=======
->>>>>>> aafa2ffdefa8ce4af51fda3e6e1491c6c96382a5
 };
