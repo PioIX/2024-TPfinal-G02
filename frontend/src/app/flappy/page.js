@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [yPosition, setYPosition] = useState(0);
@@ -13,7 +13,11 @@ export default function Home() {
   const [gravity, setGravity] = useState(0.5);
   const [gameStarted, setGameStarted] = useState(false); // Estado para controlar el inicio del juego
   const [countdown, setCountdown] = useState(3); // Estado para el contador de 3 segundos
+  const [points, setPoints] = useState(0); // Puntajes del juego
   const obstacleWidth = 60;
+
+  // Estado para saber si un obstáculo ha sido pasado
+  const [passedObstacles, setPassedObstacles] = useState(new Set()); 
 
   const obstacleConfigurations = [
     { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 164 },
@@ -35,7 +39,9 @@ export default function Home() {
   ];
 
   const jump = () => {
+    if (gameOver || !gameStarted) return; // No incrementes los puntos si el juego ha terminado o no ha comenzado
     setVelocity(-9); // El círculo sube cuando se hace clic
+    setPoints((prevPoints) => prevPoints + 1); // Incrementa los puntos al saltar
   };
 
   useEffect(() => {
@@ -105,6 +111,21 @@ export default function Home() {
     }
   }, [obstaclesPassed]);
 
+  // Lógica para sumar 15 puntos cuando se pasa un obstáculo (cuando obstacleX es menor que la posición de "Flappy")
+  useEffect(() => {
+    const birdLeft = window.innerWidth * 0.60 - 25; // Posición horizontal de Flappy
+    const birdRight = birdLeft + 50; // Ancho de Flappy
+
+    // Verificar si el obstáculo ya ha sido pasado usando un Set
+    if (obstacleX + obstacleWidth < birdRight && obstacleX + obstacleWidth > birdLeft) {
+      if (!passedObstacles.has(obstacleIndex)) {
+        setPoints((prevPoints) => prevPoints + 15); // Sumar 15 puntos al pasar un obstáculo
+        setObstaclesPassed((prev) => prev + 1); // Incrementar el contador de obstáculos pasados
+        setPassedObstacles((prev) => new Set(prev).add(obstacleIndex)); // Marcar el obstáculo como pasado
+      }
+    }
+  }, [obstacleX, obstacleIndex, passedObstacles]); // Ejecutar cuando cambian obstacleX y obstacleIndex
+
   const isColliding = () => {
     const birdBottom = yPosition + 50; // Parte inferior del círculo
     const birdTop = yPosition; // Parte superior del círculo
@@ -121,8 +142,30 @@ export default function Home() {
     return hitBottomObstacle || hitTopObstacle;
   };
 
-  if (gameOver || isColliding()) {
-    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
+  const restartGame = () => {
+    // Reiniciar el juego
+    setYPosition(window.innerHeight / 2 - 25);
+    setVelocity(0);
+    setObstacleX(window.innerWidth);
+    setObstaclesPassed(0);
+    setGameOver(false);
+    setSpeed(7);
+    setPoints(0);
+    setGameStarted(false);
+    setCountdown(3);
+    setPassedObstacles(new Set());
+  };
+
+  if (gameOver) {
+    return (
+      <div style={styles.gameOverContainer}>
+        <div style={styles.gameOverText}>¡Juego Terminado!</div>
+        <div style={styles.finalScore}>Juador 1: {points}</div>
+        <button style={styles.restartButton} onClick={restartGame}>
+          Reiniciar Juego
+        </button>
+      </div>
+    );
   }
 
   // Mostrar el contador antes de comenzar el juego
@@ -170,6 +213,10 @@ export default function Home() {
         boxSizing: 'border-box',
         bottom: `calc(100vh - ${bottomHeight + gap}px)`,
       }} />
+      {/* Mostrar puntaje */}
+      <div style={styles.score}>
+        Jugador 1: {points}
+      </div>
     </div>
   );
 }
@@ -198,5 +245,42 @@ const styles = {
     fontWeight: 'bold',
     left: '50%',
     transform: 'translateX(-50%)',
+  },
+  score: {
+    position: 'absolute',
+    top: '20px',
+    left: '20px',
+    fontSize: '30px',
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  gameOverContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    textAlign: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    padding: '40px',
+    borderRadius: '10px',
+    color: 'white',
+  },
+  gameOverText: {
+    fontSize: '50px',
+    fontWeight: 'bold',
+  },
+  finalScore: {
+    fontSize: '30px',
+    marginTop: '20px',
+  },
+  restartButton: {
+    marginTop: '20px',
+    padding: '10px 20px',
+    fontSize: '20px',
+    backgroundColor: '#ff9800',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
   },
 };
