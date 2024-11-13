@@ -11,8 +11,10 @@ export default function Home() {
   const [gameOver, setGameOver] = useState(false);
   const [speed, setSpeed] = useState(7);
   const [gravity, setGravity] = useState(0.5);
-  const [gameStarted, setGameStarted] = useState(false); // Estado para controlar el inicio del juego
-  const [countdown, setCountdown] = useState(3); // Estado para el contador de 3 segundos
+  const [gameStarted, setGameStarted] = useState(false);
+  const [countdown, setCountdown] = useState(3);
+  const [score, setScore] = useState(-1);
+  const [hasPassedObstacle, setHasPassedObstacle] = useState(false);
   const obstacleWidth = 60;
 
   const obstacleConfigurations = [
@@ -34,95 +36,113 @@ export default function Home() {
     { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 164 },
   ];
 
+  // Asegurarse de que el salto solo sume 1 punto
   const jump = () => {
-    setVelocity(-9); // El círculo sube cuando se hace clic
+    if (!gameOver) {
+      setVelocity(-9);
+      setScore((prevScore) => prevScore + 1); // Solo 1 punto por salto
+    }
   };
 
   useEffect(() => {
-    setYPosition(window.innerHeight / 2 - 25); // El círculo comienza en el medio vertical de la pantalla
+    setYPosition(window.innerHeight / 2 - 25);
   }, []);
 
   useEffect(() => {
     const handleClick = () => jump();
     window.addEventListener('click', handleClick);
 
-    // Contador de 3 segundos antes de comenzar el juego
     if (!gameStarted) {
       if (countdown > 0) {
         const timer = setInterval(() => {
           setCountdown((prev) => prev - 1);
-        }, 1000); // Disminuir cada segundo
-        return () => clearInterval(timer); // Limpiar el temporizador cuando el componente se desmonte
+        }, 1000);
+        return () => clearInterval(timer);
       } else {
-        setGameStarted(true); // Comienza el juego cuando el contador llega a 0
-        setCountdown(0); // Para asegurarnos de que el contador no vuelva a mostrarse
-        jump(); // Realiza un salto automático cuando el juego comienza
+        setGameStarted(true);
+        setCountdown(0);
+        jump();
       }
     }
 
     const gameLoop = () => {
-      if (gameOver) return; // Si el juego ha terminado, no actualices nada
+      if (gameOver) return; // Evitar ejecutar el bucle de juego cuando el juego haya terminado
 
-      setVelocity((prev) => prev + gravity); // La gravedad aumenta la velocidad hacia abajo
+      setVelocity((prev) => prev + gravity);
       setYPosition((prev) => {
         const newY = prev + velocity;
-        if (newY > window.innerHeight - 50) return window.innerHeight - 50; // Evita que el círculo caiga fuera de la pantalla
+        if (newY > window.innerHeight - 50) return window.innerHeight - 50;
         if (newY <= 0) {
-          setGameOver(true); // Si la pelota toca el techo, termina el juego
+          setGameOver(true);
         }
-        return newY < 0 ? 0 : newY; // Evita que el círculo suba fuera de la pantalla
+        return newY < 0 ? 0 : newY;
       });
 
       setObstacleX((prev) => {
         const newX = prev - speed;
         if (newX < -obstacleWidth) {
-          // Randomizar la configuración del siguiente obstáculo
           const randomIndex = Math.floor(Math.random() * obstacleConfigurations.length);
           setObstacleIndex(randomIndex);
           setObstaclesPassed((prev) => prev + 1);
-          return window.innerWidth; // Reinicia la posición del obstáculo cuando sale de la pantalla
+          setHasPassedObstacle(false);
+          return window.innerWidth;
         }
         return newX;
       });
 
-      // Verifica si hay una colisión con los obstáculos
+      if (obstacleX + obstacleWidth < window.innerWidth * 0.60 - 25 && !hasPassedObstacle && !gameOver) {
+        setScore((prevScore) => prevScore + 20);
+        setObstaclesPassed((prev) => prev + 1);
+        setHasPassedObstacle(true);
+      }
+
       if (isColliding()) {
-        setGameOver(true); // Si hay colisión, termina el juego
+        setGameOver(true);
       }
     };
 
-    const interval = setInterval(gameLoop, 16); // Se ejecuta el bucle del juego a 60fps (16ms)
+    const interval = setInterval(gameLoop, 16);
 
     return () => {
       window.removeEventListener('click', handleClick);
       clearInterval(interval);
     };
-  }, [velocity, gravity, speed, gameOver, gameStarted, countdown]);
+  }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacleX, hasPassedObstacle]);
 
+  // Aumentar velocidad cada 3 obstáculos
   useEffect(() => {
     if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0) {
-      setSpeed((prevSpeed) => prevSpeed + 0.5); // Aumenta la velocidad cada 3 obstáculos
+      setSpeed((prevSpeed) => prevSpeed + 0.5);
     }
   }, [obstaclesPassed]);
 
   const isColliding = () => {
-    const birdBottom = yPosition + 50; // Parte inferior del círculo
-    const birdTop = yPosition; // Parte superior del círculo
-    const birdLeft = window.innerWidth * 0.60 - 25; // Calculamos la posición horizontal en base al 60% de la pantalla
-    const birdRight = birdLeft + 50; // Ancho del círculo
+    const birdBottom = yPosition + 50;
+    const birdTop = yPosition;
+    const birdLeft = window.innerWidth * 0.60 - 25;
+    const birdRight = birdLeft + 50;
 
     const { topHeight, bottomHeight, gap } = obstacleConfigurations[obstacleIndex];
 
     const bottomObstacleTop = window.innerHeight - bottomHeight;
     const hitBottomObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdBottom > bottomObstacleTop;
-    const topObstacleBottom = bottomObstacleTop - gap; // Usa el gap dinámico
+    const topObstacleBottom = bottomObstacleTop - gap;
     const hitTopObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdTop < topObstacleBottom;
 
     return hitBottomObstacle || hitTopObstacle;
   };
 
+  // Mostrar la pantalla de Game Over
   if (gameOver || isColliding()) {
-    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
+    return (
+      <div style={{ ...styles.gameOverContainer }}>
+        <div style={styles.gameOverMessage}>
+          <h1 style={styles.gameOverText}>Game Over</h1>
+          <h2 style={styles.finalScore}>Final Score: {score}</h2>
+          <button style={styles.retryButton} onClick={() => window.location.reload()}>Try Again</button>
+        </div>
+      </div>
+    );
   }
 
   // Mostrar el contador antes de comenzar el juego
@@ -131,7 +151,7 @@ export default function Home() {
       <div style={styles.container}>
         <div style={{
           ...styles.countdown,
-          top: `${yPosition - 60}px`, // Ubicamos el contador arriba del "flappy"
+          top: `${yPosition - 60}px`,
         }}>
           {countdown}
         </div>
@@ -145,9 +165,9 @@ export default function Home() {
     <div style={styles.container}>
       <div style={{
         ...styles.circle,
-        top: `${yPosition}px`, // Controla la posición vertical del círculo
+        top: `${yPosition}px`,
         backgroundColor: 'red',
-        left: '60%', // Mueve el círculo un poco más a la derecha
+        left: '60%',
       }} />
       <div style={{
         position: 'absolute',
@@ -170,6 +190,11 @@ export default function Home() {
         boxSizing: 'border-box',
         bottom: `calc(100vh - ${bottomHeight + gap}px)`,
       }} />
+
+      <div style={styles.score}>
+        Score: {score}
+        {console.log(speed)}
+      </div>
     </div>
   );
 }
@@ -180,7 +205,7 @@ const styles = {
     width: '100vw',
     height: '100vh',
     overflow: 'hidden',
-    backgroundColor: '#87CEEB', // Cielo azul claro
+    backgroundColor: '#87CEEB',
   },
   circle: {
     position: 'absolute',
@@ -198,5 +223,51 @@ const styles = {
     fontWeight: 'bold',
     left: '50%',
     transform: 'translateX(-50%)',
+  },
+  score: {
+    position: 'absolute',
+    top: '20px',
+    left: '20px',
+    fontSize: '30px',
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  gameOverContainer: {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: '#d32f2f',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  gameOverMessage: {
+    textAlign: 'center',
+  },
+  gameOverText: {
+    fontSize: '80px',
+    color: 'white',
+    fontWeight: 'bold',
+    marginBottom: '20px',
+    textShadow: '3px 3px 8px rgba(0, 0, 0, 0.7)',
+  },
+  finalScore: {
+    fontSize: '40px',
+    color: 'white',
+    marginBottom: '20px',
+    fontWeight: 'bold',
+  },
+  retryButton: {
+    padding: '15px 30px',
+    fontSize: '20px',
+    backgroundColor: '#ffeb3b',
+    color: '#d32f2f',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontWeight: 'bold',
   },
 };
