@@ -9,49 +9,53 @@ export default function Home() {
   const [obstacleIndex, setObstacleIndex] = useState(0);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [speed, setSpeed] = useState(7);
-  const [gravity, setGravity] = useState(0.5);
+  const [speed, setSpeed] = useState(5.5); // Velocidad inicial
+  const [gravity, setGravity] = useState(0.5); // Gravedad ajustada
   const [gameStarted, setGameStarted] = useState(false);
-  const [countdown, setCountdown] = useState(3);
-  const [score, setScore] = useState(-1);
+  const [countdown, setCountdown] = useState(3); // Temporizador de cuenta regresiva
+  const [score, setScore] = useState(0);
   const [hasPassedObstacle, setHasPassedObstacle] = useState(false);
+  const [speedIncreased, setSpeedIncreased] = useState(false); // Controla el aumento de la velocidad
+
   const obstacleWidth = 60;
 
   const obstacleConfigurations = [
     { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 164 },
-    { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 164 },
-    { topHeight: 190, bottomHeight: 430, color: '#e91e63', gap: 164 },
-    { topHeight: 360, bottomHeight: 260, color: '#9e9e9e', gap: 164 },
-    { topHeight: 390, bottomHeight: 230, color: '#3f51b5', gap: 164 },
-    { topHeight: 100, bottomHeight: 520, color: '#f44336', gap: 164 },
-    { topHeight: 130, bottomHeight: 490, color: '#9c27b0', gap: 164 },
-    { topHeight: 190, bottomHeight: 430, color: '#2196f3', gap: 164 },
-    { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 164 },
-    { topHeight: 450, bottomHeight: 170, color: '#8bc34a', gap: 164 },
-    { topHeight: 380, bottomHeight: 220, color: '#4caf50', gap: 164 },
-    { topHeight: 450, bottomHeight: 170, color: '#ffeb3b', gap: 164 },
-    { topHeight: 410, bottomHeight: 210, color: '#673ab7', gap: 164 },
-    { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 164 },
-    { topHeight: 520, bottomHeight: 100, color: '#ffeb3b', gap: 164 },
-    { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 164 },
-  ];
+    { topHeight: 470, bottomHeight: 150, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 540, bottomHeight: 80, color: '#0f9d58', gap: 164 },
+    { topHeight: 80, bottomHeight: 540, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 150, bottomHeight: 470, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 220, bottomHeight: 400, color: '#0f9d58', gap: 164 },
+    { topHeight: 400, bottomHeight: 220, color: '#0f9d58', gap: 164 },
+];
 
-  // Asegurarse de que el salto solo sume 1 punto
+  // Función de salto
   const jump = () => {
-    if (!gameOver) {
-      setVelocity(-9);
-      setScore((prevScore) => prevScore + 1); // Solo 1 punto por salto
+    if (!gameOver) { // Solo permitir el salto si el juego no ha terminado
+      setVelocity(-9); // Cambiar la velocidad para simular el salto
+      setScore((prevScore) => prevScore + 1); // Aumentar el puntaje solo por salto
     }
   };
 
   useEffect(() => {
-    setYPosition(window.innerHeight / 2 - 25);
+    setYPosition(window.innerHeight / 2 - 25); // Inicializar la posición Y
   }, []);
 
-  useEffect(() => {
-    const handleClick = () => jump();
-    window.addEventListener('click', handleClick);
+  // Escuchar el evento de clic
+  const handleClick = () => {
+    if (!gameOver) { // Solo permitir saltar si el juego no ha terminado
+      jump();
+    }
+  };
 
+  useEffect(() => {
+    window.addEventListener('click', handleClick);
+    return () => {
+      window.removeEventListener('click', handleClick);
+    };
+  }, [gameOver]);
+
+  useEffect(() => {
     if (!gameStarted) {
       if (countdown > 0) {
         const timer = setInterval(() => {
@@ -61,60 +65,65 @@ export default function Home() {
       } else {
         setGameStarted(true);
         setCountdown(0);
-        jump();
+        jump(); // Empezar el juego con un salto
       }
     }
 
     const gameLoop = () => {
-      if (gameOver) return; // Evitar ejecutar el bucle de juego cuando el juego haya terminado
+      if (gameOver) return; // Evitar ejecutar cuando el juego haya terminado
 
+      // Aplicar la gravedad
       setVelocity((prev) => prev + gravity);
+
+      // Actualizar la posición vertical del jugador
       setYPosition((prev) => {
         const newY = prev + velocity;
-        if (newY > window.innerHeight - 50) return window.innerHeight - 50;
+        if (newY > window.innerHeight - 50) return window.innerHeight - 50; // Evitar que pase del borde inferior
         if (newY <= 0) {
-          setGameOver(true);
+          setGameOver(true); // Si toca el techo, terminar el juego
         }
         return newY < 0 ? 0 : newY;
       });
 
+      // Mover los obstáculos
       setObstacleX((prev) => {
         const newX = prev - speed;
         if (newX < -obstacleWidth) {
+          // Generar nuevos obstáculos
           const randomIndex = Math.floor(Math.random() * obstacleConfigurations.length);
           setObstacleIndex(randomIndex);
-          setObstaclesPassed((prev) => prev + 1);
+          setObstaclesPassed((prev) => prev + 1); // Incrementar el contador de obstáculos pasados
           setHasPassedObstacle(false);
           return window.innerWidth;
         }
         return newX;
       });
 
+      // Detectar si el jugador ha pasado el obstáculo
       if (obstacleX + obstacleWidth < window.innerWidth * 0.60 - 25 && !hasPassedObstacle && !gameOver) {
         setScore((prevScore) => prevScore + 20);
-        setObstaclesPassed((prev) => prev + 1);
         setHasPassedObstacle(true);
       }
 
+      // Detectar colisiones
       if (isColliding()) {
-        setGameOver(true);
+        setGameOver(true); // Terminar el juego si hay colisión
+      }
+
+      // Aumentar la velocidad después de pasar 3 obstáculos
+      if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0 && !speedIncreased) {
+        setSpeed((prevSpeed) => prevSpeed + 0.5); // Aumentar la velocidad
+        setSpeedIncreased(true); // Marcar que ya se ha aumentado la velocidad
+      }
+
+      if (obstaclesPassed % 3 !== 0) {
+        setSpeedIncreased(false); // Restablecer la bandera de velocidad cuando no se ha pasado 3 obstáculos
       }
     };
 
     const interval = setInterval(gameLoop, 16);
-
-    return () => {
-      window.removeEventListener('click', handleClick);
-      clearInterval(interval);
-    };
-  }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacleX, hasPassedObstacle]);
-
-  // Aumentar velocidad cada 3 obstáculos
-  useEffect(() => {
-    if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0) {
-      setSpeed((prevSpeed) => prevSpeed + 0.5);
-    }
-  }, [obstaclesPassed]);
+    return () => clearInterval(interval);
+  }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacleX, hasPassedObstacle, obstaclesPassed, speedIncreased]);
 
   const isColliding = () => {
     const birdBottom = yPosition + 50;
@@ -135,7 +144,7 @@ export default function Home() {
   // Mostrar la pantalla de Game Over
   if (gameOver || isColliding()) {
     return (
-      <div style={{ ...styles.gameOverContainer }}>
+      <div style={styles.gameOverContainer}>
         <div style={styles.gameOverMessage}>
           <h1 style={styles.gameOverText}>Game Over</h1>
           <h2 style={styles.finalScore}>Final Score: {score}</h2>
@@ -190,10 +199,8 @@ export default function Home() {
         boxSizing: 'border-box',
         bottom: `calc(100vh - ${bottomHeight + gap}px)`,
       }} />
-
       <div style={styles.score}>
         Score: {score}
-        {console.log(speed)}
       </div>
     </div>
   );
