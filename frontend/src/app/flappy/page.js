@@ -9,11 +9,11 @@ export default function Home() {
   const [obstacleIndex, setObstacleIndex] = useState(0);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [speed, setSpeed] = useState(5.5); // Velocidad inicial
+  const [speed, setSpeed] = useState(6.5); // Velocidad inicial
   const [gravity, setGravity] = useState(0.5); // Gravedad ajustada
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(3); // Temporizador de cuenta regresiva
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState(-21);
   const [hasPassedObstacle, setHasPassedObstacle] = useState(false);
   const [speedIncreased, setSpeedIncreased] = useState(false); // Controla el aumento de la velocidad
 
