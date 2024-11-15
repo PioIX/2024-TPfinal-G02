@@ -19,7 +19,7 @@ export default function Reglas() {
     };
 
     const textStyle = {
-        fontSize: '16px',
+        fontSize: '18px',
         color: '#666',
     };
 

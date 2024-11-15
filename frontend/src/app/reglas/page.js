@@ -1,8 +1,7 @@
-import React from "react";
 import Reglas from "../components/reglas";
 import BotonDeJuego from "../components/boton";
 
-export default function Hola() {
+export default function Reglitas() {
   // Estilos para el contenedor
   const containerStyle = {
     backgroundColor: "#007BFF", // Fondo azul
@@ -16,7 +15,6 @@ export default function Hola() {
   return (
     <div style={containerStyle}>
       <Reglas />
-      {/* Usamos el nuevo componente para el botón */}
       <BotonDeJuego />
     </div>
   );

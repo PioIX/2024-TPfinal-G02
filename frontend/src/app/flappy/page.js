@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export default function Home() {
+export default function Juego() {
   const [yPosition, setYPosition] = useState(0);
   const [velocity, setVelocity] = useState(0);
   const [obstacleX, setObstacleX] = useState(0);
@@ -27,7 +27,7 @@ export default function Home() {
     { topHeight: 150, bottomHeight: 470, color: '#0f9d58', gap: 164 }, 
     { topHeight: 220, bottomHeight: 400, color: '#0f9d58', gap: 164 },
     { topHeight: 400, bottomHeight: 220, color: '#0f9d58', gap: 164 },
-];
+  ];
 
   // Función de salto
   const jump = () => {
@@ -143,11 +143,12 @@ export default function Home() {
 
   // Mostrar la pantalla de Game Over
   if (gameOver || isColliding()) {
+    const finalScore = score - 15; // Restar 15 puntos al final del juego
     return (
       <div style={styles.gameOverContainer}>
         <div style={styles.gameOverMessage}>
           <h1 style={styles.gameOverText}>Game Over</h1>
-          <h2 style={styles.finalScore}>Final Score: {score}</h2>
+          <h2 style={styles.finalScore}>Final Score: {finalScore}</h2>
           <button style={styles.retryButton} onClick={() => window.location.reload()}>Try Again</button>
         </div>
       </div>
