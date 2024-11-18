@@ -1,18 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-export default function Home() {
+export default function Juego() {
   const [yPosition, setYPosition] = useState(0);
   const [velocity, setVelocity] = useState(0);
   const [obstacleX, setObstacleX] = useState(0);
   const [obstacleIndex, setObstacleIndex] = useState(0);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
+<<<<<<< HEAD
   const gravity = 0.5;
   const obstacleWidth = 65;
   const [speed, setSpeed] = useState(7);
+=======
+>>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
   const [gameOver, setGameOver] = useState(false);
+  const [speed, setSpeed] = useState(6.5); // Velocidad inicial
+  const [gravity, setGravity] = useState(0.5); // Gravedad ajustada
+  const [gameStarted, setGameStarted] = useState(false);
+  const [countdown, setCountdown] = useState(3); // Temporizador de cuenta regresiva
+  const [score, setScore] = useState(-21);
+  const [hasPassedObstacle, setHasPassedObstacle] = useState(false);
+  const [speedIncreased, setSpeedIncreased] = useState(false); // Controla el aumento de la velocidad
 
+<<<<<<< HEAD
   const obstacleConfigurations = [
     { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 170 },
     { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 170 },
@@ -34,114 +45,168 @@ export default function Home() {
 
   const jump = () => {
     setVelocity(-10);
+=======
+  const obstacleWidth = 60;
+
+  const obstacleConfigurations = [
+    { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 164 },
+    { topHeight: 470, bottomHeight: 150, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 540, bottomHeight: 80, color: '#0f9d58', gap: 164 },
+    { topHeight: 80, bottomHeight: 540, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 150, bottomHeight: 470, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 220, bottomHeight: 400, color: '#0f9d58', gap: 164 },
+    { topHeight: 400, bottomHeight: 220, color: '#0f9d58', gap: 164 },
+  ];
+
+  // Función de salto
+  const jump = () => {
+    if (!gameOver) { // Solo permitir el salto si el juego no ha terminado
+      setVelocity(-9); // Cambiar la velocidad para simular el salto
+      setScore((prevScore) => prevScore + 1); // Aumentar el puntaje solo por salto
+    }
+>>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
   };
 
   useEffect(() => {
-    setYPosition(window.innerHeight / 2 - 25);
+    setYPosition(window.innerHeight / 2 - 25); // Inicializar la posición Y
   }, []);
 
-  useEffect(() => {
-    const handleClick = () => jump();
-    window.addEventListener('click', handleClick);
+  // Escuchar el evento de clic
+  const handleClick = () => {
+    if (!gameOver) { // Solo permitir saltar si el juego no ha terminado
+      jump();
+    }
+  };
 
-    // Contador de 3 segundos antes de comenzar el juego
+  useEffect(() => {
+    window.addEventListener('click', handleClick);
+    return () => {
+      window.removeEventListener('click', handleClick);
+    };
+  }, [gameOver]);
+
+  useEffect(() => {
     if (!gameStarted) {
       if (countdown > 0) {
         const timer = setInterval(() => {
           setCountdown((prev) => prev - 1);
-        }, 1000); // Disminuir cada segundo
-        return () => clearInterval(timer); // Limpiar el temporizador cuando el componente se desmonte
+        }, 1000);
+        return () => clearInterval(timer);
       } else {
-        setGameStarted(true); // Comienza el juego cuando el contador llega a 0
-        setCountdown(0); // Para asegurarnos de que el contador no vuelva a mostrarse
-        jump(); // Realiza un salto automático cuando el juego comienza
+        setGameStarted(true);
+        setCountdown(0);
+        jump(); // Empezar el juego con un salto
       }
     }
 
     const gameLoop = () => {
-      if (gameOver) return;
+      if (gameOver) return; // Evitar ejecutar cuando el juego haya terminado
 
+      // Aplicar la gravedad
       setVelocity((prev) => prev + gravity);
+
+      // Actualizar la posición vertical del jugador
       setYPosition((prev) => {
         const newY = prev + velocity;
-        if (newY > window.innerHeight - 50) return window.innerHeight - 50;
+        if (newY > window.innerHeight - 50) return window.innerHeight - 50; // Evitar que pase del borde inferior
         if (newY <= 0) {
-          setGameOver(true);
+          setGameOver(true); // Si toca el techo, terminar el juego
         }
         return newY < 0 ? 0 : newY;
       });
 
+      // Mover los obstáculos
       setObstacleX((prev) => {
         const newX = prev - speed;
         if (newX < -obstacleWidth) {
+          // Generar nuevos obstáculos
           const randomIndex = Math.floor(Math.random() * obstacleConfigurations.length);
           setObstacleIndex(randomIndex);
-          setObstaclesPassed((prev) => prev + 1);
+          setObstaclesPassed((prev) => prev + 1); // Incrementar el contador de obstáculos pasados
+          setHasPassedObstacle(false);
           return window.innerWidth;
         }
         return newX;
       });
 
+      // Detectar si el jugador ha pasado el obstáculo
+      if (obstacleX + obstacleWidth < window.innerWidth * 0.60 - 25 && !hasPassedObstacle && !gameOver) {
+        setScore((prevScore) => prevScore + 20);
+        setHasPassedObstacle(true);
+      }
+
+      // Detectar colisiones
       if (isColliding()) {
-        setGameOver(true);
+        setGameOver(true); // Terminar el juego si hay colisión
+      }
+
+      // Aumentar la velocidad después de pasar 3 obstáculos
+      if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0 && !speedIncreased) {
+        setSpeed((prevSpeed) => prevSpeed + 0.5); // Aumentar la velocidad
+        setSpeedIncreased(true); // Marcar que ya se ha aumentado la velocidad
+      }
+
+      if (obstaclesPassed % 3 !== 0) {
+        setSpeedIncreased(false); // Restablecer la bandera de velocidad cuando no se ha pasado 3 obstáculos
       }
     };
 
     const interval = setInterval(gameLoop, 16);
-
-    return () => {
-      window.removeEventListener('click', handleClick);
-      clearInterval(interval);
-    };
-  }, [velocity, gravity, speed, gameOver, gameStarted, countdown]);
-
-  useEffect(() => {
-    if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0) {
-      setSpeed((prevSpeed) => prevSpeed + 0.5);
-    }
-  }, [obstaclesPassed]);
-
-  // Lógica para sumar 15 puntos cuando se pasa un obstáculo (cuando obstacleX es menor que la posición de "Flappy")
-  useEffect(() => {
-    const birdLeft = window.innerWidth * 0.60 - 25; // Posición horizontal de Flappy
-    const birdRight = birdLeft + 50; // Ancho de Flappy
-
-    // Verificar si el obstáculo ya ha sido pasado usando un Set
-    if (obstacleX + obstacleWidth < birdRight && obstacleX + obstacleWidth > birdLeft) {
-      if (!passedObstacles.has(obstacleIndex)) {
-        setPoints((prevPoints) => prevPoints + 15); // Sumar 15 puntos al pasar un obstáculo
-        setObstaclesPassed((prev) => prev + 1); // Incrementar el contador de obstáculos pasados
-        setPassedObstacles((prev) => new Set(prev).add(obstacleIndex)); // Marcar el obstáculo como pasado
-      }
-    }
-  }, [obstacleX, obstacleIndex, passedObstacles]); // Ejecutar cuando cambian obstacleX y obstacleIndex
+    return () => clearInterval(interval);
+  }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacleX, hasPassedObstacle, obstaclesPassed, speedIncreased]);
 
   const isColliding = () => {
     const birdBottom = yPosition + 50;
     const birdTop = yPosition;
+<<<<<<< HEAD
     const birdLeft = window.innerWidth / 2 - 25;
     const birdRight = window.innerWidth / 2 + 25;
+=======
+    const birdLeft = window.innerWidth * 0.60 - 25;
+    const birdRight = birdLeft + 50;
+>>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
 
     const { topHeight, bottomHeight, gap } = obstacleConfigurations[obstacleIndex];
 
     const bottomObstacleTop = window.innerHeight - bottomHeight;
+    const hitBottomObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdBottom > bottomObstacleTop;
     const topObstacleBottom = bottomObstacleTop - gap;
-
-    const hitBottomObstacle =
-      obstacleX < birdRight &&
-      obstacleX + obstacleWidth > birdLeft &&
-      birdBottom > bottomObstacleTop;
-
-    const hitTopObstacle =
-      obstacleX < birdRight &&
-      obstacleX + obstacleWidth > birdLeft &&
-      birdTop < topObstacleBottom;
+    const hitTopObstacle = obstacleX < birdRight && obstacleX + obstacleWidth > birdLeft && birdTop < topObstacleBottom;
 
     return hitBottomObstacle || hitTopObstacle;
   };
 
+<<<<<<< HEAD
   if (gameOver || isColliding()) {
     return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
+=======
+  // Mostrar la pantalla de Game Over
+  if (gameOver || isColliding()) {
+    const finalScore = score - 15; // Restar 15 puntos al final del juego
+    return (
+      <div style={styles.gameOverContainer}>
+        <div style={styles.gameOverMessage}>
+          <h1 style={styles.gameOverText}>Game Over</h1>
+          <h2 style={styles.finalScore}>Final Score: {finalScore}</h2>
+          <button style={styles.retryButton} onClick={() => window.location.reload()}>Try Again</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar el contador antes de comenzar el juego
+  if (!gameStarted && countdown > 0) {
+    return (
+      <div style={styles.container}>
+        <div style={{
+          ...styles.countdown,
+          top: `${yPosition - 60}px`,
+        }}>
+          {countdown}
+        </div>
+      </div>
+    );
+>>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
   }
 
   const { topHeight, bottomHeight, color, gap } = obstacleConfigurations[obstacleIndex];
@@ -152,6 +217,10 @@ export default function Home() {
         ...styles.circle,
         top: `${yPosition}px`,
         backgroundColor: 'red',
+<<<<<<< HEAD
+=======
+        left: '60%',
+>>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
       }} />
       <div style={{
         position: 'absolute',
@@ -174,9 +243,8 @@ export default function Home() {
         boxSizing: 'border-box',
         bottom: `calc(100vh - ${bottomHeight + gap}px)`,
       }} />
-      {/* Mostrar puntaje */}
       <div style={styles.score}>
-        Jugador 1: {points}
+        Score: {score}
       </div>
     </div>
   );
@@ -212,37 +280,45 @@ const styles = {
     top: '20px',
     left: '20px',
     fontSize: '30px',
-    color: 'white',
     fontWeight: 'bold',
+    color: 'white',
   },
   gameOverContainer: {
     position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    top: '0',
+    left: '0',
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: '#d32f2f',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'column',
+  },
+  gameOverMessage: {
     textAlign: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    padding: '40px',
-    borderRadius: '10px',
-    color: 'white',
   },
   gameOverText: {
-    fontSize: '50px',
+    fontSize: '80px',
+    color: 'white',
     fontWeight: 'bold',
+    marginBottom: '20px',
+    textShadow: '3px 3px 8px rgba(0, 0, 0, 0.7)',
   },
   finalScore: {
-    fontSize: '30px',
-    marginTop: '20px',
-  },
-  restartButton: {
-    marginTop: '20px',
-    padding: '10px 20px',
-    fontSize: '20px',
-    backgroundColor: '#ff9800',
+    fontSize: '40px',
     color: 'white',
+    marginBottom: '20px',
+    fontWeight: 'bold',
+  },
+  retryButton: {
+    padding: '15px 30px',
+    fontSize: '20px',
+    backgroundColor: '#ffeb3b',
+    color: '#d32f2f',
     border: 'none',
     borderRadius: '5px',
     cursor: 'pointer',
+    fontWeight: 'bold',
   },
 };
-
