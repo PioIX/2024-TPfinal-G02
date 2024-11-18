@@ -1,4 +1,5 @@
 import styles from './page.module.css';
+import BotonDeJuego from './components/boton';
 
 // Define the buttonStyle, inputStyle, and headingStyle objects outside the Login function
 const buttonStyle = {
@@ -63,6 +64,7 @@ export default function Login() {
           style={inputStyle} // Aplicar el estilo común al input
         />
         <button type="submit" style={buttonStyle}>Crear Cuenta</button>
+        <BotonDeJuego />
       </form>
     </div>
   );
