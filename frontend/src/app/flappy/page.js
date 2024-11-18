@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from 'react';
 
-export default function Juego() {
+export default function Home() {
+  // Posición vertical del jugador
   const [yPosition, setYPosition] = useState(0);
+  // Velocidad de caída del jugador
   const [velocity, setVelocity] = useState(0);
+  // Posición horizontal del obstáculo
   const [obstacleX, setObstacleX] = useState(0);
+  // Índice del obstáculo actual
   const [obstacleIndex, setObstacleIndex] = useState(0);
+  // Contador de obstáculos pasados
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
-<<<<<<< HEAD
-  const gravity = 0.5;
-  const obstacleWidth = 65;
-  const [speed, setSpeed] = useState(7);
-=======
->>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
+<<<<<<< Updated upstream
   const [gameOver, setGameOver] = useState(false);
   const [speed, setSpeed] = useState(6.5); // Velocidad inicial
   const [gravity, setGravity] = useState(0.5); // Gravedad ajustada
@@ -23,7 +23,41 @@ export default function Juego() {
   const [hasPassedObstacle, setHasPassedObstacle] = useState(false);
   const [speedIncreased, setSpeedIncreased] = useState(false); // Controla el aumento de la velocidad
 
-<<<<<<< HEAD
+  const obstacleWidth = 60;
+
+  const obstacleConfigurations = [
+    { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 164 },
+    { topHeight: 470, bottomHeight: 150, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 540, bottomHeight: 80, color: '#0f9d58', gap: 164 },
+    { topHeight: 80, bottomHeight: 540, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 150, bottomHeight: 470, color: '#0f9d58', gap: 164 }, 
+    { topHeight: 220, bottomHeight: 400, color: '#0f9d58', gap: 164 },
+    { topHeight: 400, bottomHeight: 220, color: '#0f9d58', gap: 164 },
+];
+
+  // Función de salto
+  const jump = () => {
+    if (!gameOver) { // Solo permitir el salto si el juego no ha terminado
+      setVelocity(-9); // Cambiar la velocidad para simular el salto
+      setScore((prevScore) => prevScore + 1); // Aumentar el puntaje solo por salto
+    }
+=======
+  // Velocidad de los obstáculos
+  const [speed, setSpeed] = useState(7);
+  // Estado de si el juego ha terminado
+  const [gameOver, setGameOver] = useState(false);
+  // Estado de si el juego ha comenzado
+  const [gameStarted, setGameStarted] = useState(false);
+  // Contador de 3 segundos antes de comenzar el juego
+  const [countdown, setCountdown] = useState(3);
+  // Puntuación del jugador
+  const [points, setPoints] = useState(0);
+  const [passedObstacles, setPassedObstacles] = useState(new Set());
+
+  const gravity = 0.5;
+  const obstacleWidth = 65;
+
+  // Configuración de los obstáculos
   const obstacleConfigurations = [
     { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 170 },
     { topHeight: 480, bottomHeight: 120, color: '#ff9800', gap: 170 },
@@ -43,30 +77,13 @@ export default function Juego() {
     { topHeight: 530, bottomHeight: 90, color: '#ff9800', gap: 170 },
   ];
 
+  // Función para hacer que el jugador salte
   const jump = () => {
     setVelocity(-10);
-=======
-  const obstacleWidth = 60;
-
-  const obstacleConfigurations = [
-    { topHeight: 310, bottomHeight: 310, color: '#0f9d58', gap: 164 },
-    { topHeight: 470, bottomHeight: 150, color: '#0f9d58', gap: 164 }, 
-    { topHeight: 540, bottomHeight: 80, color: '#0f9d58', gap: 164 },
-    { topHeight: 80, bottomHeight: 540, color: '#0f9d58', gap: 164 }, 
-    { topHeight: 150, bottomHeight: 470, color: '#0f9d58', gap: 164 }, 
-    { topHeight: 220, bottomHeight: 400, color: '#0f9d58', gap: 164 },
-    { topHeight: 400, bottomHeight: 220, color: '#0f9d58', gap: 164 },
-  ];
-
-  // Función de salto
-  const jump = () => {
-    if (!gameOver) { // Solo permitir el salto si el juego no ha terminado
-      setVelocity(-9); // Cambiar la velocidad para simular el salto
-      setScore((prevScore) => prevScore + 1); // Aumentar el puntaje solo por salto
-    }
->>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
+>>>>>>> Stashed changes
   };
 
+  // Configurar la posición inicial del jugador
   useEffect(() => {
     setYPosition(window.innerHeight / 2 - 25); // Inicializar la posición Y
   }, []);
@@ -152,19 +169,51 @@ export default function Juego() {
     };
 
     const interval = setInterval(gameLoop, 16);
+<<<<<<< Updated upstream
     return () => clearInterval(interval);
   }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacleX, hasPassedObstacle, obstaclesPassed, speedIncreased]);
+=======
 
+    return () => {
+      window.removeEventListener('click', handleClick);
+      clearInterval(interval);
+    };
+  }, [velocity, gravity, speed, gameOver, gameStarted, countdown]);
+
+  // Aumentar la velocidad cada 3 obstáculos pasados
+  useEffect(() => {
+    if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0) {
+      setSpeed((prevSpeed) => prevSpeed + 0.5);
+    }
+  }, [obstaclesPassed]);
+
+  // Sumar puntos cuando se pasa un obstáculo
+  useEffect(() => {
+    const birdLeft = window.innerWidth * 0.60 - 25; // Posición horizontal de Flappy
+    const birdRight = birdLeft + 50; // Ancho de Flappy
+
+    // Verificar si el obstáculo ya ha sido pasado usando un Set
+    if (obstacleX + obstacleWidth < birdRight && obstacleX + obstacleWidth > birdLeft) {
+      if (!passedObstacles.has(obstacleIndex)) {
+        setPoints((prevPoints) => prevPoints + 15); // Sumar 15 puntos al pasar un obstáculo
+        setObstaclesPassed((prev) => prev + 1); // Incrementar el contador de obstáculos pasados
+        setPassedObstacles((prev) => new Set(prev).add(obstacleIndex)); // Marcar el obstáculo como pasado
+      }
+    }
+  }, [obstacleX, obstacleIndex, passedObstacles]);
+>>>>>>> Stashed changes
+
+  // Función para detectar colisión con los obstáculos
   const isColliding = () => {
     const birdBottom = yPosition + 50;
     const birdTop = yPosition;
-<<<<<<< HEAD
-    const birdLeft = window.innerWidth / 2 - 25;
-    const birdRight = window.innerWidth / 2 + 25;
-=======
+<<<<<<< Updated upstream
     const birdLeft = window.innerWidth * 0.60 - 25;
     const birdRight = birdLeft + 50;
->>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
+=======
+    const birdLeft = window.innerWidth / 2 - 25;
+    const birdRight = window.innerWidth / 2 + 25;
+>>>>>>> Stashed changes
 
     const { topHeight, bottomHeight, gap } = obstacleConfigurations[obstacleIndex];
 
@@ -176,18 +225,14 @@ export default function Juego() {
     return hitBottomObstacle || hitTopObstacle;
   };
 
-<<<<<<< HEAD
-  if (gameOver || isColliding()) {
-    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
-=======
+<<<<<<< Updated upstream
   // Mostrar la pantalla de Game Over
   if (gameOver || isColliding()) {
-    const finalScore = score - 15; // Restar 15 puntos al final del juego
     return (
       <div style={styles.gameOverContainer}>
         <div style={styles.gameOverMessage}>
           <h1 style={styles.gameOverText}>Game Over</h1>
-          <h2 style={styles.finalScore}>Final Score: {finalScore}</h2>
+          <h2 style={styles.finalScore}>Final Score: {score}</h2>
           <button style={styles.retryButton} onClick={() => window.location.reload()}>Try Again</button>
         </div>
       </div>
@@ -206,9 +251,14 @@ export default function Juego() {
         </div>
       </div>
     );
->>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
+=======
+  // Mostrar mensaje de "Game Over" si el juego termina
+  if (gameOver || isColliding()) {
+    return <div style={{ ...styles.container, backgroundColor: 'red' }}>¡Game Over!</div>;
+>>>>>>> Stashed changes
   }
 
+  // Configuración del obstáculo actual
   const { topHeight, bottomHeight, color, gap } = obstacleConfigurations[obstacleIndex];
 
   return (
@@ -217,10 +267,10 @@ export default function Juego() {
         ...styles.circle,
         top: `${yPosition}px`,
         backgroundColor: 'red',
-<<<<<<< HEAD
-=======
+<<<<<<< Updated upstream
         left: '60%',
->>>>>>> af8bbb130d907c5b4b6efa53bf1b31c6d0ae03f5
+=======
+>>>>>>> Stashed changes
       }} />
       <div style={{
         position: 'absolute',
@@ -321,4 +371,8 @@ const styles = {
     cursor: 'pointer',
     fontWeight: 'bold',
   },
+<<<<<<< Updated upstream
 };
+=======
+};
+>>>>>>> Stashed changes
