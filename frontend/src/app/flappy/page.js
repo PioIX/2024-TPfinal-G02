@@ -19,16 +19,6 @@ export default function Home() {
 
   const obstacleWidth = 60;
 
-   /*const obstacleConfigurations = [
-    { topHeight: 310, bottomHeight: 310, color: "#0f9d58", gap: 164 },
-    { topHeight: 470, bottomHeight: 150, color: "#0f9d58", gap: 164 },
-    { topHeight: 540, bottomHeight: 80, color: "#0f9d58", gap: 164 },
-    { topHeight: 80, bottomHeight: 540, color: "#0f9d58", gap: 164 },
-    { topHeight: 150, bottomHeight: 470, color: "#0f9d58", gap: 164 },
-    { topHeight: 220, bottomHeight: 400, color: "#0f9d58", gap: 164 },
-    { topHeight: 400, bottomHeight: 220, color: "#0f9d58", gap: 164 },
-  ];             OBSTACULOS DESDE PIO                         */
-
   const obstacleConfigurations = [
     { topHeight: 360, bottomHeight: 360, color: "#0f9d58", gap: 164 },
     { topHeight: 520, bottomHeight: 200, color: "#0f9d58", gap: 164 },
@@ -173,18 +163,30 @@ export default function Home() {
     return hitTopObstacle || hitBottomObstacle;
   };
 
+  const redirectToHome = () => {
+    window.location.href = "/"; // Redirige a la página principal
+  };
+
   if (gameOver) {
     return (
       <div style={styles.gameOverContainer}>
         <div style={styles.gameOverMessage}>
           <h1 style={styles.gameOverText}>Game Over</h1>
           <h2 style={styles.finalScore}>Final Score: {score}</h2>
-          <button
-            style={styles.retryButton}
-            onClick={() => window.location.reload()}
-          >
-            Try Again
-          </button>
+          <div style={styles.buttonsContainer}>
+            <button
+              style={styles.retryButton}
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+            <button
+              style={styles.menuButton}
+              onClick={redirectToHome}
+            >
+              Menu
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -274,11 +276,11 @@ const styles = {
   },
   score: {
     position: "absolute",
-    top: "20px",
-    left: "20px",
-    fontSize: "30px",
+    top: "10px",
+    left: "10px",
+    fontSize: "20px",
+    color: "black",
     fontWeight: "bold",
-    color: "white",
   },
   gameOverContainer: {
     position: "absolute",
@@ -308,8 +310,13 @@ const styles = {
     marginBottom: "20px",
     fontWeight: "bold",
   },
+  buttonsContainer: {
+    display: "flex",
+    flexDirection: "column", // Asegura que los botones estén uno debajo del otro
+    gap: "10px", // Añade espacio entre los botones
+  },
   retryButton: {
-    padding: "15px 30px",
+    padding: "10px 20px", // Reduce el padding para que los botones no sean tan anchos
     fontSize: "20px",
     backgroundColor: "#ffeb3b",
     color: "#d32f2f",
@@ -317,5 +324,18 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
     fontWeight: "bold",
+    width: "auto", // Puedes quitar esta línea si prefieres un tamaño más ajustado
+  },
+  
+  menuButton: {
+    padding: "10px 20px", // Reduce el padding también aquí
+    fontSize: "20px",
+    backgroundColor: "#ffeb3b",
+    color: "#d32f2f",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    width: "auto", // Igual que arriba, esta línea puede ser ajustada
   },
 };
