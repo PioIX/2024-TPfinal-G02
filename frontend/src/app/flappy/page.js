@@ -5,29 +5,18 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [yPosition, setYPosition] = useState(0);
   const [velocity, setVelocity] = useState(0);
-  const [obstacleX, setObstacleX] = useState(0);
-  const [obstacleIndex, setObstacleIndex] = useState(0);
+  const [obstacles, setObstacles] = useState([]);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [speed, setSpeed] = useState(6.5);
   const [gravity, setGravity] = useState(0.5);
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(3);
-  const [score, setScore] = useState(-21);
-  const [hasPassedObstacle, setHasPassedObstacle] = useState(false);
+  const [score, setScore] = useState(-1);
   const [speedIncreased, setSpeedIncreased] = useState(false);
 
   const obstacleWidth = 60;
-
-   /*const obstacleConfigurations = [
-    { topHeight: 310, bottomHeight: 310, color: "#0f9d58", gap: 164 },
-    { topHeight: 470, bottomHeight: 150, color: "#0f9d58", gap: 164 },
-    { topHeight: 540, bottomHeight: 80, color: "#0f9d58", gap: 164 },
-    { topHeight: 80, bottomHeight: 540, color: "#0f9d58", gap: 164 },
-    { topHeight: 150, bottomHeight: 470, color: "#0f9d58", gap: 164 },
-    { topHeight: 220, bottomHeight: 400, color: "#0f9d58", gap: 164 },
-    { topHeight: 400, bottomHeight: 220, color: "#0f9d58", gap: 164 },
-  ];             OBSTACULOS DESDE PIO                         */
+  const obstacleSpacing = 1000 // Aumentado el espacio entre obstáculos
 
   const obstacleConfigurations = [
     { topHeight: 360, bottomHeight: 360, color: "#0f9d58", gap: 164 },
@@ -39,7 +28,29 @@ export default function Home() {
     { topHeight: 450, bottomHeight: 270, color: "#0f9d58", gap: 164 },
   ];
 
-  // Función para el salto
+  const createObstacle = (x) => {
+    const randomIndex = Math.floor(Math.random() * obstacleConfigurations.length);
+    return {
+      x,
+      ...obstacleConfigurations[randomIndex],
+      passed: false,
+      index: randomIndex,
+    };
+  };
+
+  // Modificada la inicialización de obstáculos
+  const initializeObstacles = () => {
+    const numberOfObstacles = Math.ceil((window.innerWidth * 2) / obstacleSpacing); // Calculamos cuántos obstáculos necesitamos
+    const newObstacles = [];
+    
+    // Generamos obstáculos desde más allá del borde derecho de la pantalla
+    for (let i = 0; i < numberOfObstacles; i++) {
+      const x = window.innerWidth + (i * obstacleSpacing);
+      newObstacles.push(createObstacle(x));
+    }
+    setObstacles(newObstacles);
+  };
+
   const jump = () => {
     if (!gameOver) {
       setVelocity(-9);
@@ -48,7 +59,8 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setYPosition(window.innerHeight / 2 - 25); // Inicializa la posición vertical del pájaro en el centro
+    setYPosition(window.innerHeight / 2 - 25);
+    initializeObstacles();
   }, []);
 
   const handleClick = () => {
@@ -86,31 +98,33 @@ export default function Home() {
       setYPosition((prev) => {
         const newY = prev + velocity;
         if (newY > window.innerHeight - 50) return window.innerHeight - 50;
-        return newY < 0 ? 0 : newY; // Evita que se mueva fuera de la pantalla en el techo
+        return newY < 0 ? 0 : newY;
       });
 
-      setObstacleX((prev) => {
-        const newX = prev - speed;
-        if (newX < -obstacleWidth) {
-          const randomIndex = Math.floor(
-            Math.random() * obstacleConfigurations.length
-          );
-          setObstacleIndex(randomIndex);
-          setObstaclesPassed((prev) => prev + 1);
-          setHasPassedObstacle(false);
-          return window.innerWidth;
-        }
-        return newX;
-      });
+      setObstacles((currentObstacles) => {
+        let newObstacles = currentObstacles.map((obstacle) => {
+          const newX = obstacle.x - speed;
+          
+          // Si el obstáculo sale de la pantalla, lo reposicionamos al final
+          if (newX < -obstacleWidth) {
+            const farthestX = Math.max(...currentObstacles.map(o => o.x));
+            return createObstacle(farthestX + obstacleSpacing);
+          }
 
-      if (
-        obstacleX + obstacleWidth < window.innerWidth * 0.6 - 25 &&
-        !hasPassedObstacle &&
-        !gameOver
-      ) {
-        setScore((prevScore) => prevScore + 20);
-        setHasPassedObstacle(true);
-      }
+          // Si el pájaro pasa el obstáculo
+          if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.6 - 25) {
+            setScore((prevScore) => prevScore + 20);
+            setObstaclesPassed((prev) => prev + 1);
+            return { ...obstacle, x: newX, passed: true };
+          }
+
+          return { ...obstacle, x: newX };
+        });
+
+        // Ordenamos los obstáculos por posición X para mantener la consistencia
+        newObstacles.sort((a, b) => a.x - b.x);
+        return newObstacles;
+      });
 
       if (obstaclesPassed > 0 && obstaclesPassed % 3 === 0 && !speedIncreased) {
         setSpeed((prevSpeed) => prevSpeed + 0.5);
@@ -123,54 +137,42 @@ export default function Home() {
 
       if (isColliding()) {
         setGameOver(true);
-        setScore((prevScore) => prevScore - 15); // Resta 15 puntos cuando se acaba el juego
+        setScore((prevScore) => prevScore - 15);
       }
 
-      if (yPosition <= 0) { // Verificar si tocó el techo
+      if (yPosition <= 0) {
         setGameOver(true);
-        setScore((prevScore) => prevScore - 15); // Resta 15 puntos si el pájaro toca el techo
+        setScore((prevScore) => prevScore - 15);
       }
     };
 
     const interval = setInterval(gameLoop, 16);
     return () => clearInterval(interval);
-  }, [
-    velocity,
-    gravity,
-    speed,
-    gameOver,
-    gameStarted,
-    countdown,
-    obstacleX,
-    hasPassedObstacle,
-    obstaclesPassed,
-    speedIncreased,
-    yPosition,
-  ]);
+  }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, yPosition]);
 
   const isColliding = () => {
-    const circleRadius = 25; // Radio del círculo (50px de diámetro dividido entre 2)
-    const circleX = window.innerWidth * 0.6; // Posición X del círculo
-    const circleY = yPosition + circleRadius; // Centro del círculo en Y
+    const circleRadius = 25;
+    const circleX = window.innerWidth * 0.6;
+    const circleY = yPosition + circleRadius;
 
-    const obstacleLeft = obstacleX;
-    const obstacleRight = obstacleX + obstacleWidth;
-    const obstacleTop = obstacleConfigurations[obstacleIndex].topHeight;
-    const obstacleBottom =
-      window.innerHeight - obstacleConfigurations[obstacleIndex].bottomHeight;
+    return obstacles.some((obstacle) => {
+      const obstacleLeft = obstacle.x;
+      const obstacleRight = obstacle.x + obstacleWidth;
+      const obstacleTop = obstacle.topHeight;
+      const obstacleBottom = window.innerHeight - obstacle.bottomHeight;
 
-    // Verificar colisión con la parte superior o inferior del obstáculo
-    const hitTopObstacle =
-      circleX + circleRadius > obstacleLeft &&
-      circleX - circleRadius < obstacleRight &&
-      circleY - circleRadius < obstacleTop;
+      const hitTopObstacle =
+        circleX + circleRadius > obstacleLeft &&
+        circleX - circleRadius < obstacleRight &&
+        circleY - circleRadius < obstacleTop;
 
-    const hitBottomObstacle =
-      circleX + circleRadius > obstacleLeft &&
-      circleX - circleRadius < obstacleRight &&
-      circleY + circleRadius > obstacleBottom;
+      const hitBottomObstacle =
+        circleX + circleRadius > obstacleLeft &&
+        circleX - circleRadius < obstacleRight &&
+        circleY + circleRadius > obstacleBottom;
 
-    return hitTopObstacle || hitBottomObstacle;
+      return hitTopObstacle || hitBottomObstacle;
+    });
   };
 
   if (gameOver) {
@@ -205,8 +207,6 @@ export default function Home() {
     );
   }
 
-  const { topHeight, bottomHeight, color, gap } = obstacleConfigurations[obstacleIndex];
-
   return (
     <div style={styles.container}>
       <div
@@ -217,31 +217,35 @@ export default function Home() {
           left: "60%",
         }}
       />
-      <div
-        style={{
-          position: "absolute",
-          left: `${obstacleX}px`,
-          bottom: "0",
-          width: `${obstacleWidth}px`,
-          height: `${bottomHeight}px`,
-          backgroundColor: color,
-          border: "3px solid black",
-          boxSizing: "border-box",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: `${obstacleX}px`,
-          top: "0",
-          width: `${obstacleWidth}px`,
-          height: `${topHeight}px`,
-          backgroundColor: color,
-          border: "3px solid black",
-          boxSizing: "border-box",
-          bottom: `calc(100vh - ${bottomHeight + gap}px)`,
-        }}
-      />
+      {obstacles.map((obstacle, index) => (
+        <div key={index}>
+          <div
+            style={{
+              position: "absolute",
+              left: `${obstacle.x}px`,
+              bottom: "0",
+              width: `${obstacleWidth}px`,
+              height: `${obstacle.bottomHeight}px`,
+              backgroundColor: obstacle.color,
+              border: "3px solid black",
+              boxSizing: "border-box",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: `${obstacle.x}px`,
+              top: "0",
+              width: `${obstacleWidth}px`,
+              height: `${obstacle.topHeight}px`,
+              backgroundColor: obstacle.color,
+              border: "3px solid black",
+              boxSizing: "border-box",
+              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
+            }}
+          />
+        </div>
+      ))}
       <div style={styles.score}>Score: {score}</div>
     </div>
   );
