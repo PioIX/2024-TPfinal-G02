@@ -1,0 +1,63 @@
+/*!*******************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[3]!./src/app/page.module.css ***!
+  \*******************************************************************************************************************************************************************************************************************************************************************/
+.page_page__ZU32B {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-image: url(/_next/static/media/FlappyFondo.6789aeb5.png);
+    background-size: cover; /* Ajusta la imagen al tamaño de la pantalla */
+    background-repeat: no-repeat; /* Evita que la imagen se repita */
+    background-position: center; /* Centra la imagen en la pantalla */
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .page_title__3jonF {
+    margin-bottom: 20px;
+    color: #333; /* Texto oscuro para contraste */
+  }
+  
+  .page_form__Ou5d6 {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px; /* Ancho máximo para mantenerlo compacto */
+    margin-bottom: 20px;
+  }
+  
+  .page_input___cVLA {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .page_button__vnlhW {
+    padding: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .page_button__vnlhW:hover {
+    background-color: #0056b3;
+  }
+  
+  .page_button__vnlhW:active {
+    transform: scale(0.98);
+  }
+  
+  .page_input___cVLA:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
