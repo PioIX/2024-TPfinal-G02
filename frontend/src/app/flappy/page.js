@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "./home.module.css"
 
 export default function Home() {
   const [yPosition, setYPosition] = useState(0);
@@ -8,7 +9,7 @@ export default function Home() {
   const [obstacles, setObstacles] = useState([]);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [speed, setSpeed] = useState(6.5);
+  const [speed, setSpeed] = useState(6);
   const [gravity, setGravity] = useState(0.5);
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -19,13 +20,13 @@ export default function Home() {
   const obstacleSpacing = 1000 // Aumentado el espacio entre obstáculos
 
   const obstacleConfigurations = [
-    { topHeight: 360, bottomHeight: 360, color: "#0f9d58", gap: 164 },
-    { topHeight: 520, bottomHeight: 200, color: "#0f9d58", gap: 164 },
-    { topHeight: 590, bottomHeight: 130, color: "#0f9d58", gap: 164 },
-    { topHeight: 130, bottomHeight: 590, color: "#0f9d58", gap: 164 },
-    { topHeight: 200, bottomHeight: 520, color: "#0f9d58", gap: 164 },
-    { topHeight: 270, bottomHeight: 450, color: "#0f9d58", gap: 164 },
-    { topHeight: 450, bottomHeight: 270, color: "#0f9d58", gap: 164 },
+    { topHeight: 310, bottomHeight: 310, color: "#0f9d58", gap: 164 },
+    { topHeight: 470, bottomHeight: 150, color: "#0f9d58", gap: 164 },
+    { topHeight: 540, bottomHeight: 80, color: "#0f9d58", gap: 164 },
+    { topHeight: 80, bottomHeight: 540, color: "#0f9d58", gap: 164 },
+    { topHeight: 150, bottomHeight: 470, color: "#0f9d58", gap: 164 },
+    { topHeight: 220, bottomHeight: 400, color: "#0f9d58", gap: 164 },
+    { topHeight: 400, bottomHeight: 220, color: "#0f9d58", gap: 164 },
   ];
 
   const createObstacle = (x) => {
@@ -113,7 +114,7 @@ export default function Home() {
 
           // Si el pájaro pasa el obstáculo
           if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.6 - 25) {
-            setScore((prevScore) => prevScore + 20);
+            setScore((prevScore) => prevScore + 10); // Cambié aquí el puntaje a 20
             setObstaclesPassed((prev) => prev + 1);
             return { ...obstacle, x: newX, passed: true };
           }
@@ -177,12 +178,12 @@ export default function Home() {
 
   if (gameOver) {
     return (
-      <div style={styles.gameOverContainer}>
-        <div style={styles.gameOverMessage}>
-          <h1 style={styles.gameOverText}>Game Over</h1>
-          <h2 style={styles.finalScore}>Final Score: {score}</h2>
+      <div style={styles1.gameOverContainer}>
+        <div style={styles1.gameOverMessage}>
+          <h1 style={styles1.gameOverText}>Game Over</h1>
+          <h2 style={styles1.finalScore}>Final Score: {score}</h2>
           <button
-            style={styles.retryButton}
+            style={styles1.retryButton}
             onClick={() => window.location.reload()}
           >
             Try Again
@@ -194,10 +195,10 @@ export default function Home() {
 
   if (!gameStarted && countdown > 0) {
     return (
-      <div style={styles.container}>
+      <div className={styles.container}>
         <div
           style={{
-            ...styles.countdown,
+            ...styles1.countdown,
             top: `${yPosition - 60}px`,
           }}
         >
@@ -208,10 +209,10 @@ export default function Home() {
   }
 
   return (
-    <div style={styles.container}>
+    <div className={styles.container}>
       <div
         style={{
-          ...styles.circle,
+          ...styles1.circle,
           top: `${yPosition}px`,
           backgroundColor: "red",
           left: "60%",
@@ -246,12 +247,12 @@ export default function Home() {
           />
         </div>
       ))}
-      <div style={styles.score}>Score: {score}</div>
+      <div style={styles1.score}>Score: {score}</div>
     </div>
   );
 }
 
-const styles = {
+const styles1 = {
   container: {
     position: "relative",
     width: "100vw",

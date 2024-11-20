@@ -1,5 +1,5 @@
 .page {
-  background-image: url("../public/images/FlappyFondo.png");
+  background-image: url("images/FlappyFondo.png");
   background-size: cover; /* Ajusta la imagen al tamaño del contenedor */
   background-repeat: no-repeat; /* Evita que la imagen se repita */
   background-position: center; /* Centra la imagen */
