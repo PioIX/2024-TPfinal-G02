@@ -5,6 +5,7 @@
     justify-content: center;
     height: 100vh;
     background-image: url("/images/FlappyFondo.png");
+    background-image: url("/images/FlappyRojo.png");
     background-size: cover; /* Ajusta la imagen al tamaño de la pantalla */
     background-repeat: no-repeat; /* Evita que la imagen se repita */
     background-position: center; /* Centra la imagen en la pantalla */

@@ -16,7 +16,8 @@ export default function Home() {
   const [speedIncreased, setSpeedIncreased] = useState(false);
 
   const obstacleWidth = 60;
-  const obstacleSpacing = 1000 // Aumentado el espacio entre obstáculos
+  const obstacleSpacing = 1000;
+  const playerSize = 50; // Tamaño del jugador (imagen)
 
   const obstacleConfigurations = [
     { topHeight: 360, bottomHeight: 360, color: "linear-gradient(45deg, #00ff00, #66cc66)", gap: 164 },
@@ -26,8 +27,7 @@ export default function Home() {
     { topHeight: 200, bottomHeight: 520, color: "linear-gradient(45deg, #33cc33, #66cc33)", gap: 164 },
     { topHeight: 270, bottomHeight: 450, color: "linear-gradient(45deg, #339933, #66cc66)", gap: 164 },
     { topHeight: 450, bottomHeight: 270, color: "linear-gradient(45deg, #66cc66, #33cc33)", gap: 164 },
-];
-
+  ];
 
   const createObstacle = (x) => {
     const randomIndex = Math.floor(Math.random() * obstacleConfigurations.length);
@@ -39,12 +39,9 @@ export default function Home() {
     };
   };
 
-  // Modificada la inicialización de obstáculos
   const initializeObstacles = () => {
-    const numberOfObstacles = Math.ceil((window.innerWidth * 2) / obstacleSpacing); // Calculamos cuántos obstáculos necesitamos
+    const numberOfObstacles = Math.ceil((window.innerWidth * 2) / obstacleSpacing);
     const newObstacles = [];
-    
-    // Generamos obstáculos desde más allá del borde derecho de la pantalla
     for (let i = 0; i < numberOfObstacles; i++) {
       const x = window.innerWidth + (i * obstacleSpacing);
       newObstacles.push(createObstacle(x));
@@ -60,7 +57,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setYPosition(window.innerHeight / 2 - 25);
+    setYPosition(window.innerHeight / 2 - playerSize / 2);
     initializeObstacles();
   }, []);
 
@@ -98,22 +95,20 @@ export default function Home() {
 
       setYPosition((prev) => {
         const newY = prev + velocity;
-        if (newY > window.innerHeight - 50) return window.innerHeight - 50;
+        if (newY > window.innerHeight - playerSize) return window.innerHeight - playerSize;
         return newY < 0 ? 0 : newY;
       });
 
       setObstacles((currentObstacles) => {
         let newObstacles = currentObstacles.map((obstacle) => {
           const newX = obstacle.x - speed;
-          
-          // Si el obstáculo sale de la pantalla, lo reposicionamos al final
+
           if (newX < -obstacleWidth) {
             const farthestX = Math.max(...currentObstacles.map(o => o.x));
             return createObstacle(farthestX + obstacleSpacing);
           }
 
-          // Si el pájaro pasa el obstáculo
-          if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.6 - 25) {
+          if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.6 - playerSize / 2) {
             setScore((prevScore) => prevScore + 10);
             setObstaclesPassed((prev) => prev + 1);
             return { ...obstacle, x: newX, passed: true };
@@ -122,7 +117,6 @@ export default function Home() {
           return { ...obstacle, x: newX };
         });
 
-        // Ordenamos los obstáculos por posición X para mantener la consistencia
         newObstacles.sort((a, b) => a.x - b.x);
         return newObstacles;
       });
@@ -152,9 +146,8 @@ export default function Home() {
   }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, yPosition]);
 
   const isColliding = () => {
-    const circleRadius = 25;
-    const circleX = window.innerWidth * 0.6;
-    const circleY = yPosition + circleRadius;
+    const playerX = window.innerWidth * 0.6 - playerSize / 2;
+    const playerY = yPosition;
 
     return obstacles.some((obstacle) => {
       const obstacleLeft = obstacle.x;
@@ -163,14 +156,14 @@ export default function Home() {
       const obstacleBottom = window.innerHeight - obstacle.bottomHeight;
 
       const hitTopObstacle =
-        circleX + circleRadius > obstacleLeft &&
-        circleX - circleRadius < obstacleRight &&
-        circleY - circleRadius < obstacleTop;
+        playerX + playerSize > obstacleLeft &&
+        playerX < obstacleRight &&
+        playerY < obstacleTop;
 
       const hitBottomObstacle =
-        circleX + circleRadius > obstacleLeft &&
-        circleX - circleRadius < obstacleRight &&
-        circleY + circleRadius > obstacleBottom;
+        playerX + playerSize > obstacleLeft &&
+        playerX < obstacleRight &&
+        playerY + playerSize > obstacleBottom;
 
       return hitTopObstacle || hitBottomObstacle;
     });
@@ -210,45 +203,48 @@ export default function Home() {
 
   return (
     <div style={styles.container}>
-      <div
+      <img
+        src="/images/FlappyRojo.png"
+        alt="Player"
         style={{
           ...styles.circle,
           top: `${yPosition}px`,
-          backgroundColor: "red",
-          left: "60%",
+          transform: "translate(-50%, 0)",
+          width: `${playerSize}px`,
+          height: `${playerSize}px`,
         }}
       />
       {obstacles.map((obstacle, index) => (
-  <div key={index}>
-    <div
-      style={{
-        position: "absolute",
-        left: `${obstacle.x}px`,
-        bottom: "0",
-        width: `${obstacleWidth}px`,
-        height: `${obstacle.bottomHeight}px`,
-        background: obstacle.color, 
-        boxSizing: "border-box",
-        borderRadius: "3px", 
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)", 
-      }}
-    />
-    <div
-      style={{
-        position: "absolute",
-        left: `${obstacle.x}px`,
-        top: "0",
-        width: `${obstacleWidth}px`,
-        height: `${obstacle.topHeight}px`,
-        background: obstacle.color, 
-        boxSizing: "border-box",
-        borderRadius: "3px", 
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)", 
-        bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
-      }}
-    />
-  </div>
-))}
+        <div key={index}>
+          <div
+            style={{
+              position: "absolute",
+              left: `${obstacle.x}px`,
+              bottom: "0",
+              width: `${obstacleWidth}px`,
+              height: `${obstacle.bottomHeight}px`,
+              background: obstacle.color,
+              boxSizing: "border-box",
+              borderRadius: "3px",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: `${obstacle.x}px`,
+              top: "0",
+              width: `${obstacleWidth}px`,
+              height: `${obstacle.topHeight}px`,
+              background: obstacle.color,
+              boxSizing: "border-box",
+              borderRadius: "3px",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
+              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
+            }}
+          />
+        </div>
+      ))}
       <div style={styles.score}>Score: {score}</div>
     </div>
   );
@@ -259,8 +255,8 @@ const styles = {
     position: "relative",
     width: "100vw",
     height: "100vh",
-    overflow: "hidden", // Eliminar barras de desplazamiento
-    backgroundColor: "#87CEEB", // Celeste (ya está, aseguramos que no se sobrescriba)
+    overflow: "hidden",
+    backgroundColor: "#87CEEB",
     margin: -8,
     padding: -8,
     display: "flex",
@@ -271,9 +267,6 @@ const styles = {
     position: "absolute",
     left: "50%",
     top: "0",
-    width: "50px",
-    height: "50px",
-    borderRadius: "50%",
     transform: "translateX(-50%)",
   },
   countdown: {
