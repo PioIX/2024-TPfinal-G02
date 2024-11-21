@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import styles from "./home.module.css"
 
 export default function Home() {
   const [yPosition, setYPosition] = useState(0);
@@ -9,7 +8,7 @@ export default function Home() {
   const [obstacles, setObstacles] = useState([]);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [speed, setSpeed] = useState(6);
+  const [speed, setSpeed] = useState(6.5);
   const [gravity, setGravity] = useState(0.5);
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(3);
@@ -20,14 +19,15 @@ export default function Home() {
   const obstacleSpacing = 1000 // Aumentado el espacio entre obstáculos
 
   const obstacleConfigurations = [
-    { topHeight: 310, bottomHeight: 310, color: "#0f9d58", gap: 164 },
-    { topHeight: 470, bottomHeight: 150, color: "#0f9d58", gap: 164 },
-    { topHeight: 540, bottomHeight: 80, color: "#0f9d58", gap: 164 },
-    { topHeight: 80, bottomHeight: 540, color: "#0f9d58", gap: 164 },
-    { topHeight: 150, bottomHeight: 470, color: "#0f9d58", gap: 164 },
-    { topHeight: 220, bottomHeight: 400, color: "#0f9d58", gap: 164 },
-    { topHeight: 400, bottomHeight: 220, color: "#0f9d58", gap: 164 },
-  ];
+    { topHeight: 360, bottomHeight: 360, color: "linear-gradient(45deg, #00ff00, #66cc66)", gap: 164 },
+    { topHeight: 520, bottomHeight: 200, color: "linear-gradient(45deg, #00cc00, #66ff66)", gap: 164 },
+    { topHeight: 590, bottomHeight: 130, color: "linear-gradient(45deg, #00cc66, #33cc66)", gap: 164 },
+    { topHeight: 130, bottomHeight: 590, color: "linear-gradient(45deg, #66cc00, #66ff33)", gap: 164 },
+    { topHeight: 200, bottomHeight: 520, color: "linear-gradient(45deg, #33cc33, #66cc33)", gap: 164 },
+    { topHeight: 270, bottomHeight: 450, color: "linear-gradient(45deg, #339933, #66cc66)", gap: 164 },
+    { topHeight: 450, bottomHeight: 270, color: "linear-gradient(45deg, #66cc66, #33cc33)", gap: 164 },
+];
+
 
   const createObstacle = (x) => {
     const randomIndex = Math.floor(Math.random() * obstacleConfigurations.length);
@@ -114,7 +114,7 @@ export default function Home() {
 
           // Si el pájaro pasa el obstáculo
           if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.6 - 25) {
-            setScore((prevScore) => prevScore + 10); // Cambié aquí el puntaje a 20
+            setScore((prevScore) => prevScore + 10);
             setObstaclesPassed((prev) => prev + 1);
             return { ...obstacle, x: newX, passed: true };
           }
@@ -178,12 +178,12 @@ export default function Home() {
 
   if (gameOver) {
     return (
-      <div style={styles1.gameOverContainer}>
-        <div style={styles1.gameOverMessage}>
-          <h1 style={styles1.gameOverText}>Game Over</h1>
-          <h2 style={styles1.finalScore}>Final Score: {score}</h2>
+      <div style={styles.gameOverContainer}>
+        <div style={styles.gameOverMessage}>
+          <h1 style={styles.gameOverText}>Game Over</h1>
+          <h2 style={styles.finalScore}>Final Score: {score}</h2>
           <button
-            style={styles1.retryButton}
+            style={styles.retryButton}
             onClick={() => window.location.reload()}
           >
             Try Again
@@ -195,10 +195,10 @@ export default function Home() {
 
   if (!gameStarted && countdown > 0) {
     return (
-      <div className={styles.container}>
+      <div style={styles.container}>
         <div
           style={{
-            ...styles1.countdown,
+            ...styles.countdown,
             top: `${yPosition - 60}px`,
           }}
         >
@@ -209,56 +209,63 @@ export default function Home() {
   }
 
   return (
-    <div className={styles.container}>
+    <div style={styles.container}>
       <div
         style={{
-          ...styles1.circle,
+          ...styles.circle,
           top: `${yPosition}px`,
           backgroundColor: "red",
           left: "60%",
         }}
       />
       {obstacles.map((obstacle, index) => (
-        <div key={index}>
-          <div
-            style={{
-              position: "absolute",
-              left: `${obstacle.x}px`,
-              bottom: "0",
-              width: `${obstacleWidth}px`,
-              height: `${obstacle.bottomHeight}px`,
-              backgroundColor: obstacle.color,
-              border: "3px solid black",
-              boxSizing: "border-box",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              left: `${obstacle.x}px`,
-              top: "0",
-              width: `${obstacleWidth}px`,
-              height: `${obstacle.topHeight}px`,
-              backgroundColor: obstacle.color,
-              border: "3px solid black",
-              boxSizing: "border-box",
-              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
-            }}
-          />
-        </div>
-      ))}
-      <div style={styles1.score}>Score: {score}</div>
+  <div key={index}>
+    <div
+      style={{
+        position: "absolute",
+        left: `${obstacle.x}px`,
+        bottom: "0",
+        width: `${obstacleWidth}px`,
+        height: `${obstacle.bottomHeight}px`,
+        background: obstacle.color, 
+        boxSizing: "border-box",
+        borderRadius: "3px", 
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)", 
+      }}
+    />
+    <div
+      style={{
+        position: "absolute",
+        left: `${obstacle.x}px`,
+        top: "0",
+        width: `${obstacleWidth}px`,
+        height: `${obstacle.topHeight}px`,
+        background: obstacle.color, 
+        boxSizing: "border-box",
+        borderRadius: "3px", 
+        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)", 
+        bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
+      }}
+    />
+  </div>
+))}
+      <div style={styles.score}>Score: {score}</div>
     </div>
   );
 }
 
-const styles1 = {
+const styles = {
   container: {
     position: "relative",
     width: "100vw",
     height: "100vh",
-    overflow: "hidden",
-    backgroundColor: "#87CEEB",
+    overflow: "hidden", // Eliminar barras de desplazamiento
+    backgroundColor: "#87CEEB", // Celeste (ya está, aseguramos que no se sobrescriba)
+    margin: -8,
+    padding: -8,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
   },
   circle: {
     position: "absolute",

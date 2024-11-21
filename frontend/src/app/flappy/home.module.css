@@ -1,13 +1,12 @@
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    width: 100vw; /* Asegura que ocupe todo el ancho */
-    background-image: url("/images/FondoJuego.png");
-    background-size: cover; /* Ajusta la imagen al tamaño de la pantalla */
-    background-repeat: no-repeat; /* Evita que la imagen se repita */
-    background-position: center; /* Centra la imagen en la pantalla */
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%; 
+  width: 100%;
+  background-image: url("/images/FondoJuego.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+} 
