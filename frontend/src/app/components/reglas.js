@@ -56,6 +56,14 @@ export default function Reglas() {
             <p style={ruleTextStyle}>
                 <b>Regla 4:</b> Quien consiga más <b>puntos gana!</b>
             </p>
+            <h2 style={headingStyle}>Ejemplo del juego:</h2>
+            {/* Video insertado abajo de las reglas */}
+            <div style={{ marginTop: '20px' }}>
+                <video width="100%" controls>
+                    <source src="/images/ejemplo.mp4" type="video/mp4" />
+                    Tu navegador no soporta el formato de video.
+                </video>
+            </div>
         </div>
     );
 }
