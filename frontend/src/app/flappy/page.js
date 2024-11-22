@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import io from "socket.io-client";
-
-let socket;
-let otherPlayers = new Map();
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [yPosition, setYPosition] = useState(0);
@@ -18,12 +14,10 @@ export default function Home() {
   const [countdown, setCountdown] = useState(3);
   const [score, setScore] = useState(-1);
   const [speedIncreased, setSpeedIncreased] = useState(false);
-  const [playersCount, setPlayersCount] = useState(0); // Contador de jugadores conectados
-  const gameRef = useRef(null);
 
   const obstacleWidth = 60;
   const obstacleSpacing = 1000;
-  const playerSize = 50;
+  const playerSize = 50; // Tamaño del jugador (imagen)
 
   const obstacleConfigurations = [
     { topHeight: 360, bottomHeight: 360, color: "linear-gradient(45deg, #00ff00, #66cc66)", gap: 164 },
@@ -34,53 +28,6 @@ export default function Home() {
     { topHeight: 270, bottomHeight: 450, color: "linear-gradient(45deg, #339933, #66cc66)", gap: 164 },
     { topHeight: 450, bottomHeight: 270, color: "linear-gradient(45deg, #66cc66, #33cc33)", gap: 164 },
   ];
-
-  // Inicializar el socket
-  useEffect(() => {
-    console.log("🎮 Iniciando multijugador...");
-    socket = io("http://localhost:3000", {
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
-
-    socket.on("connect", () => {
-      console.log("✅ Conectado al servidor con ID:", socket.id);
-      const initialPosition = {
-        x: window.innerWidth * 0.6,
-        y: yPosition,
-      };
-      socket.emit("playerJoin", initialPosition);
-    });
-
-    socket.on("connect_error", (error) => {
-      console.error("❌ Error de conexión:", error);
-    });
-
-    socket.on("players", (players) => {
-      console.log("📥 Recibidos datos de jugadores:", players);
-      otherPlayers.clear();
-      players.forEach((player) => {
-        if (player.id !== socket.id) {
-          otherPlayers.set(player.id, player);
-        }
-      });
-      setPlayersCount(players.length);
-    });
-
-    const pingInterval = setInterval(() => {
-      if (socket?.connected) {
-        socket.emit("ping", { time: new Date().getTime() });
-      }
-    }, 5000);
-
-    return () => {
-      clearInterval(pingInterval);
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  }, [yPosition]);
 
   const createObstacle = (x) => {
     const randomIndex = Math.floor(Math.random() * obstacleConfigurations.length);
@@ -96,7 +43,7 @@ export default function Home() {
     const numberOfObstacles = Math.ceil((window.innerWidth * 2) / obstacleSpacing);
     const newObstacles = [];
     for (let i = 0; i < numberOfObstacles; i++) {
-      const x = window.innerWidth + i * obstacleSpacing;
+      const x = window.innerWidth + (i * obstacleSpacing);
       newObstacles.push(createObstacle(x));
     }
     setObstacles(newObstacles);
@@ -129,10 +76,6 @@ export default function Home() {
 
   useEffect(() => {
     if (!gameStarted) {
-      if (playersCount < 2) {
-        return; // No iniciar el juego hasta que haya al menos 2 jugadores
-      }
-
       if (countdown > 0) {
         const timer = setInterval(() => {
           setCountdown((prev) => prev - 1);
@@ -161,7 +104,7 @@ export default function Home() {
           const newX = obstacle.x - speed;
 
           if (newX < -obstacleWidth) {
-            const farthestX = Math.max(...currentObstacles.map((o) => o.x));
+            const farthestX = Math.max(...currentObstacles.map(o => o.x));
             return createObstacle(farthestX + obstacleSpacing);
           }
 
@@ -192,29 +135,15 @@ export default function Home() {
         setScore((prevScore) => prevScore - 15);
       }
 
-      if (socket?.connected) {
-        socket.emit("updatePosition", {
-          x: window.innerWidth * 0.6,
-          y: yPosition,
-        });
+      if (yPosition <= 0) {
+        setGameOver(true);
+        setScore((prevScore) => prevScore - 15);
       }
     };
 
     const interval = setInterval(gameLoop, 16);
     return () => clearInterval(interval);
-  }, [
-    velocity,
-    gravity,
-    speed,
-    gameOver,
-    gameStarted,
-    countdown,
-    obstacles,
-    obstaclesPassed,
-    speedIncreased,
-    yPosition,
-    playersCount,
-  ]);
+  }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, yPosition]);
 
   const isColliding = () => {
     const playerX = window.innerWidth * 0.6 - playerSize / 2;
@@ -260,13 +189,10 @@ export default function Home() {
   if (!gameStarted && countdown > 0) {
     return (
       <div style={styles.container}>
-        {playersCount < 2 && (
-          <div style={styles.waitingMessage}>Waiting for another player...</div>
-        )}
         <div
           style={{
             ...styles.countdown,
-            top: `${yPosition - 60}px`,
+            top: `${yPosition - 60}px`, // Asegurarse de que sea una cadena de texto correctamente interpolada
           }}
         >
           {countdown}
@@ -282,32 +208,21 @@ export default function Home() {
         alt="Player"
         style={{
           ...styles.circle,
-          top: `${yPosition}px`,
+          top: `${yPosition}px`, 
           transform: "translate(-50%, 0)",
-          width: `${playerSize}px`,
-          height: `${playerSize}px`,
+          width: `${playerSize}px`, // Interpolación correcta
+          height: `${playerSize}px`, // Interpolación correcta
         }}
       />
-      {Array.from(otherPlayers.values()).map((player, index) => (
-        <div
-          key={`player-${index}`}
-          style={{
-            ...styles.circle,
-            top: `${player.y}px`,
-            left: `${player.x}px`,
-            backgroundColor: "blue",
-          }}
-        />
-      ))}
       {obstacles.map((obstacle, index) => (
         <div key={index}>
           <div
             style={{
               position: "absolute",
-              left: `${obstacle.x}px`,
+              left: `${obstacle.x}px`, // Interpolación correcta
               bottom: "0",
-              width: `${obstacleWidth}px`,
-              height: `${obstacle.bottomHeight}px`,
+              width: `${obstacleWidth}px`, // Interpolación correcta
+              height: `${obstacle.bottomHeight}px`, // Interpolación correcta
               background: obstacle.color,
               boxSizing: "border-box",
               borderRadius: "3px",
@@ -317,15 +232,15 @@ export default function Home() {
           <div
             style={{
               position: "absolute",
-              left: `${obstacle.x}px`,
+              left: `${obstacle.x}px`, // Interpolación correcta
               top: "0",
-              width: `${obstacleWidth}px`,
-              height: `${obstacle.topHeight}px`,
+              width: `${obstacleWidth}px`, // Interpolación correcta
+              height: `${obstacle.topHeight}px`, // Interpolación correcta
               background: obstacle.color,
               boxSizing: "border-box",
               borderRadius: "3px",
               boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
-              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
+              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`, // Interpolación correcta
             }}
           />
         </div>
@@ -407,15 +322,5 @@ const styles = {
     borderRadius: "5px",
     cursor: "pointer",
     fontWeight: "bold",
-  },
-  waitingMessage: {
-    position: "absolute",
-    fontSize: "30px",
-    color: "white",
-    fontWeight: "bold",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    zIndex: 20,
   },
 };
