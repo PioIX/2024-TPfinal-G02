@@ -1,0 +1,88 @@
+.container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #87CEEB;
+    margin: -8px;
+    padding: -8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .circle {
+    position: absolute;
+    top: 0;
+    z-index: 1;
+  }
+  
+  .countdown {
+    position: absolute;
+    font-size: 100px;
+    color: white;
+    font-weight: bold;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .score {
+    position: absolute; /* Mantiene la posición fija */
+    top: 20px; /* Espaciado desde la parte superior */
+    left: 20px; /* Espaciado desde la izquierda */
+    padding: 10px 20px; /* Añade relleno interno para más espacio alrededor del texto */
+    font-size: 24px; /* Tamaño del texto del marcador */
+    font-weight: bold; /* Negrita para visibilidad */
+    color: #ffffff; /* Texto blanco */
+    background-color: rgba(0, 0, 0, 0.6); /* Fondo negro con transparencia */
+    border-radius: 8px; /* Bordes redondeados para un diseño más moderno */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra para darle profundidad */
+    border: 2px solid #FFD700; /* Borde dorado para destacar */
+    text-align: center; /* Centra el texto dentro del marcador */
+    z-index: 2; /* Asegura que el marcador esté encima de otros elementos */
+  }
+  
+  .gameOverContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #d32f2f;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  
+  .gameOverMessage {
+    text-align: center;
+  }
+  
+  .gameOverText {
+    font-size: 120px; /* Texto grande */
+    color: black; /* Texto en negro */
+    font-weight: bold; /* Negrita para mayor visibilidad */
+    margin-bottom: 20px; /* Espaciado inferior para separación */
+    text-shadow: 5px 5px 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.6), 0 0 5px rgba(0, 0, 0, 0.5); /* Más sombra para dar efecto de profundidad */
+    font-family: 'Press Start 2P', cursive; /* Fuente pixelada para estilo retro */
+    text-transform: uppercase; /* Todo en mayúsculas */
+  }
+  
+  .finalScore {
+    font-size: 40px;
+    color: white;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  .retryButton {
+    padding: 15px 30px;
+    font-size: 20px;
+    background-color: #ffeb3b;
+    color: #d32f2f;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  

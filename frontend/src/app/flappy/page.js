@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from 'next/router';
 
 export default function Home() {
-  const [yPosition, setYPosition] = useState(0);
-  const [velocity, setVelocity] = useState(0);
+  const [player1Position, setPlayer1Position] = useState(0);
+  const [player2Position, setPlayer2Position] = useState(0);
+  const [player1Velocity, setPlayer1Velocity] = useState(0);
+  const [player2Velocity, setPlayer2Velocity] = useState(0);
   const [obstacles, setObstacles] = useState([]);
   const [obstaclesPassed, setObstaclesPassed] = useState(0);
   const [gameOver, setGameOver] = useState(false);
@@ -13,7 +15,8 @@ export default function Home() {
   const [gravity, setGravity] = useState(0.5);
   const [gameStarted, setGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(3);
-  const [score, setScore] = useState(-1);
+  const [player1Score, setPlayer1Score] = useState(-1);
+  const [player2Score, setPlayer2Score] = useState(-1);
   const [speedIncreased, setSpeedIncreased] = useState(false);
 
   const obstacleWidth = 60;
@@ -21,15 +24,16 @@ export default function Home() {
   const playerSize = 90;
   const hitboxOffset = 12;
   const playerHitboxSize = playerSize - (hitboxOffset * 2);
+  const player2XOffset = -100;
 
   const obstacleConfigurations = [
-    { topHeight: 360, bottomHeight: 360, color: "linear-gradient(45deg, #00ff00, #66cc66)", gap: 170 },
-    { topHeight: 520, bottomHeight: 200, color: "linear-gradient(45deg, #00cc00, #66ff66)", gap: 170 },
-    { topHeight: 590, bottomHeight: 130, color: "linear-gradient(45deg, #00cc66, #33cc66)", gap: 170 },
-    { topHeight: 130, bottomHeight: 590, color: "linear-gradient(45deg, #66cc00, #66ff33)", gap: 170 },
-    { topHeight: 200, bottomHeight: 520, color: "linear-gradient(45deg, #33cc33, #66cc33)", gap: 170 },
-    { topHeight: 270, bottomHeight: 450, color: "linear-gradient(45deg, #339933, #66cc66)", gap: 170 },
-    { topHeight: 450, bottomHeight: 270, color: "linear-gradient(45deg, #66cc66, #33cc33)", gap: 170 },
+    { topHeight: 360, bottomHeight: 360, gap: 170 },
+    { topHeight: 520, bottomHeight: 200, gap: 170 },
+    { topHeight: 590, bottomHeight: 130, gap: 170 },
+    { topHeight: 130, bottomHeight: 590, gap: 170 },
+    { topHeight: 200, bottomHeight: 520, gap: 170 },
+    { topHeight: 270, bottomHeight: 450, gap: 170 },
+    { topHeight: 450, bottomHeight: 270, gap: 170 },
   ];
 
   const createObstacle = (x) => {
@@ -38,6 +42,7 @@ export default function Home() {
       x,
       ...obstacleConfigurations[randomIndex],
       passed: false,
+      passedByPlayer2: false,
       index: randomIndex,
     };
   };
@@ -52,28 +57,44 @@ export default function Home() {
     setObstacles(newObstacles);
   };
 
-  const jump = () => {
+  const jump = (isPlayer1) => {
     if (!gameOver) {
-      setVelocity(-9);
-      setScore((prevScore) => prevScore + 1);
+      if (isPlayer1) {
+        setPlayer1Velocity(-9);
+        setPlayer1Score((prevScore) => prevScore + 1);
+      } else {
+        setPlayer2Velocity(-9);
+        setPlayer2Score((prevScore) => prevScore + 1);
+      }
     }
   };
 
   useEffect(() => {
-    setYPosition(window.innerHeight / 2 - playerSize / 2);
+    const initialY = window.innerHeight / 2 - playerSize / 2;
+    setPlayer1Position(initialY);
+    setPlayer2Position(initialY);
     initializeObstacles();
   }, []);
 
   const handleClick = () => {
     if (!gameOver) {
-      jump();
+      jump(true);
+    }
+  };
+
+  const handleKeyPress = (event) => {
+    if (event.code === 'Space' && !gameOver) {
+      event.preventDefault();
+      jump(false);
     }
   };
 
   useEffect(() => {
     window.addEventListener("click", handleClick);
+    window.addEventListener("keydown", handleKeyPress);
     return () => {
       window.removeEventListener("click", handleClick);
+      window.removeEventListener("keydown", handleKeyPress);
     };
   }, [gameOver]);
 
@@ -87,17 +108,25 @@ export default function Home() {
       } else {
         setGameStarted(true);
         setCountdown(0);
-        jump();
+        jump(true);
+        jump(false);
       }
     }
 
     const gameLoop = () => {
       if (gameOver) return;
 
-      setVelocity((prev) => prev + gravity);
+      setPlayer1Velocity((prev) => prev + gravity);
+      setPlayer2Velocity((prev) => prev + gravity);
 
-      setYPosition((prev) => {
-        const newY = prev + velocity;
+      setPlayer1Position((prev) => {
+        const newY = prev + player1Velocity;
+        if (newY > window.innerHeight - playerSize) return window.innerHeight - playerSize;
+        return newY < 0 ? 0 : newY;
+      });
+
+      setPlayer2Position((prev) => {
+        const newY = prev + player2Velocity;
         if (newY > window.innerHeight - playerSize) return window.innerHeight - playerSize;
         return newY < 0 ? 0 : newY;
       });
@@ -111,13 +140,20 @@ export default function Home() {
             return createObstacle(farthestX + obstacleSpacing);
           }
 
+          let updatedObstacle = { ...obstacle, x: newX };
+
           if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.4 - playerSize / 2) {
-            setScore((prevScore) => prevScore + 10);
+            setPlayer1Score((prevScore) => prevScore + 10);
             setObstaclesPassed((prev) => prev + 1);
-            return { ...obstacle, x: newX, passed: true };
+            updatedObstacle.passed = true;
           }
 
-          return { ...obstacle, x: newX };
+          if (!obstacle.passedByPlayer2 && newX + obstacleWidth < window.innerWidth * 0.4 - playerSize / 2 + player2XOffset) {
+            setPlayer2Score((prevScore) => prevScore + 10);
+            updatedObstacle.passedByPlayer2 = true;
+          }
+
+          return updatedObstacle;
         });
 
         newObstacles.sort((a, b) => a.x - b.x);
@@ -133,24 +169,26 @@ export default function Home() {
         setSpeedIncreased(false);
       }
 
-      if (isColliding()) {
+      if (isColliding(true) || isColliding(false)) {
         setGameOver(true);
-        setScore((prevScore) => prevScore - 15);
+        if (isColliding(true)) setPlayer1Score((prevScore) => prevScore - 15);
+        if (isColliding(false)) setPlayer2Score((prevScore) => prevScore - 15);
       }
 
-      if (yPosition <= 0) {
+      if (player1Position <= 0 || player2Position <= 0) {
         setGameOver(true);
-        setScore((prevScore) => prevScore - 15);
+        if (player1Position <= 0) setPlayer1Score((prevScore) => prevScore - 15);
+        if (player2Position <= 0) setPlayer2Score((prevScore) => prevScore - 15);
       }
     };
 
     const interval = setInterval(gameLoop, 16);
     return () => clearInterval(interval);
-  }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, yPosition]);
+  }, [player1Velocity, player2Velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, player1Position, player2Position]);
 
-  const isColliding = () => {
-    const playerX = window.innerWidth * 0.4;
-    const playerY = yPosition + hitboxOffset;
+  const isColliding = (isPlayer1) => {
+    const playerX = window.innerWidth * 0.4 + (isPlayer1 ? 0 : player2XOffset);
+    const playerY = isPlayer1 ? player1Position + hitboxOffset : player2Position + hitboxOffset;
 
     return obstacles.some((obstacle) => {
       const obstacleLeft = obstacle.x + 5;
@@ -177,10 +215,14 @@ export default function Home() {
       <div style={styles.gameOverContainer}>
         <div style={styles.gameOverMessage}>
           <h1 style={styles.gameOverText}>Game Over</h1>
-          <h2 style={styles.finalScore}>Final Score: {score}</h2>
+          <h2 style={styles.finalScore}>Player 1 Score: {player1Score}</h2>
+          <h2 style={styles.finalScore}>Player 2 Score: {player2Score}</h2>
+          <h2 style={styles.finalScore}>
+            Winner: {player1Score > player2Score ? "Player 1" : player1Score < player2Score ? "Player 2" : "Tie!"}
+          </h2>
           <button
             style={styles.retryButton}
-            onClick={() => window.location.href = '/'} // Redirige a la página principal
+            onClick={() => window.location.href = '/'}
           >
             Volver
           </button>
@@ -195,7 +237,7 @@ export default function Home() {
         <div
           style={{
             ...styles.countdown,
-            top: `${yPosition - 60}px`,
+            top: `${player1Position - 60}px`,
           }}
         >
           {countdown}
@@ -208,48 +250,98 @@ export default function Home() {
     <div style={styles.container}>
       <img
         src="/images/FlappyRojo.png"
-        alt="Player"
+        alt="Player 1"
         style={{
           ...styles.circle,
-          top: `${yPosition}px`,
+          top: `${player1Position}px`,
           left: "40%",
           transform: "translate(-50%, 0)",
           width: `${playerSize}px`,
           height: `${playerSize}px`,
         }}
       />
+      <img
+        src="/images/FlappyRojo.png"
+        alt="Player 2"
+        style={{
+          ...styles.circle,
+          top: `${player2Position}px`,
+          left: `calc(40% + ${player2XOffset}px)`,
+          transform: "translate(-50%, 0)",
+          width: `${playerSize}px`,
+          height: `${playerSize}px`,
+          filter: `hue-rotate(240deg)
+            brightness(1.2)    
+            contrast(1.3)` ,
+        }}
+      />
+      
       {obstacles.map((obstacle, index) => (
         <div key={index}>
-          <div
-            style={{
+          <div style={{
+            position: "absolute",
+            left: `${obstacle.x}px`,
+            bottom: "0",
+            width: `${obstacleWidth}px`,
+            height: `${obstacle.bottomHeight}px`,
+            background: "#75C147",
+            boxSizing: "border-box",
+            borderLeft: "3px solid #558B2F",
+            borderRight: "3px solid #558B2F",
+          }}>
+            <div style={{
               position: "absolute",
-              left: `${obstacle.x}px`,
-              bottom: "0",
-              width: `${obstacleWidth}px`,
-              height: `${obstacle.bottomHeight}px`,
-              background: obstacle.color,
-              boxSizing: "border-box",
-              borderRadius: "3px",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              left: `${obstacle.x}px`,
               top: "0",
-              width: `${obstacleWidth}px`,
-              height: `${obstacle.topHeight}px`,
-              background: obstacle.color,
-              boxSizing: "border-box",
-              borderRadius: "3px",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
-              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
-            }}
-          />
+              width: "100%",
+              height: "20px",
+              background: "#558B2F",
+              borderRadius: "4px 4px 0 0",
+              boxShadow: "inset 0 -2px 3px rgba(0, 0, 0, 0.3)"
+            }} />
+            <div style={{
+              position: "absolute",
+              top: "20px",
+              left: "10px",
+              width: "8px",
+              height: "100%",
+              background: "rgba(255, 255, 255, 0.1)"
+            }} />
+          </div>
+          <div style={{
+            position: "absolute",
+            left: `${obstacle.x}px`,
+            top: "0",
+            width: `${obstacleWidth}px`,
+            height: `${obstacle.topHeight}px`,
+            background: "#75C147",
+            boxSizing: "border-box",
+            borderLeft: "3px solid #558B2F",
+            borderRight: "3px solid #558B2F",
+          }}>
+            <div style={{
+              position: "absolute",
+              bottom: "0",
+              width: "100%",
+              height: "20px",
+              background: "#558B2F",
+              borderRadius: "0 0 4px 4px",
+              boxShadow: "inset 0 2px 3px rgba(0, 0, 0, 0.3)"
+            }} />
+            <div style={{
+              position: "absolute",
+              top: "0",
+              left: "10px",
+              width: "8px",
+              height: "100%",
+              background: "rgba(255, 255, 255, 0.1)"
+            }} />
+          </div>
         </div>
       ))}
-      <div style={styles.score}>Score: {score}</div>
+      <div style={styles.score}>
+        <div>Player 1 Score: {player1Score}</div>
+        <div>Player 2 Score: {player2Score}</div>
+      </div>
     </div>
   );
 }
@@ -269,9 +361,8 @@ const styles = {
   },
   circle: {
     position: "absolute",
-    left: "50%",
     top: "0",
-    transform: "translateX(-50%)",
+    zIndex: 1,
   },
   countdown: {
     position: "absolute",
@@ -285,9 +376,16 @@ const styles = {
     position: "absolute",
     top: "20px",
     left: "20px",
-    fontSize: "30px",
+    padding: "10px 20px",
+    fontSize: "24px",
     fontWeight: "bold",
-    color: "white",
+    color: "#ffffff",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    borderRadius: "8px",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
+    border: "2px solid #FFD700",
+    textAlign: "center",
+    zIndex: 2,
   },
   gameOverContainer: {
     position: "absolute",
@@ -305,17 +403,22 @@ const styles = {
     textAlign: "center",
   },
   gameOverText: {
-    fontSize: "80px",
-    color: "white",
-    fontWeight: "bold",
-    marginBottom: "20px",
-    textShadow: "3px 3px 8px rgba(0, 0, 0, 0.7)",
+    fontSize: "120px", // Texto grande.
+    color: "white", 
+    fontWeight: "bold", // Negrita para mayor visibilidad.
+    marginBottom: "20px", // Espaciado inferior para separación.
+    textShadow: "5px 5px 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.6), 0 0 5px rgba(0, 0, 0, 0.5)", // Más sombra para dar efecto de profundidad.
+    fontFamily: "Courier New, Courier, monospace", 
+    textTransform: "uppercase", // Todo en mayúsculas.
   },
   finalScore: {
     fontSize: "40px",
     color: "white",
+    fontWeight: "bold", // Negrita para mayor visibilidad.
     marginBottom: "20px",
+    fontFamily: "Courier New, Courier, monospace",
     fontWeight: "bold",
+    textTransform: "uppercase", // Todo en mayúsculas.
   },
   retryButton: {
     padding: "15px 30px",
@@ -325,6 +428,5 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-    fontWeight: "bold",
   },
 };
