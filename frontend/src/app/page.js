@@ -1,6 +1,7 @@
 'use client';  // Asegúrate de que este archivo se ejecute en el cliente
 
 import { useState } from 'react';
+import BotonDeJuego from './components/boton';
 import styles from "./page.module.css"; // Estilos CSS (asegúrate de que esté bien importado)
 
 export default function Login() {
@@ -79,6 +80,7 @@ export default function Login() {
           Crear
         </button>
       </form>
+      <BotonDeJuego></BotonDeJuego>
     </div>
   );
 }
