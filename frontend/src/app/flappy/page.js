@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/router';
 
 export default function Home() {
   const [yPosition, setYPosition] = useState(0);
@@ -17,16 +18,18 @@ export default function Home() {
 
   const obstacleWidth = 60;
   const obstacleSpacing = 1000;
-  const playerSize = 50; // Tamaño del jugador (imagen)
+  const playerSize = 90;
+  const hitboxOffset = 12;
+  const playerHitboxSize = playerSize - (hitboxOffset * 2);
 
   const obstacleConfigurations = [
-    { topHeight: 360, bottomHeight: 360, color: "linear-gradient(45deg, #00ff00, #66cc66)", gap: 164 },
-    { topHeight: 520, bottomHeight: 200, color: "linear-gradient(45deg, #00cc00, #66ff66)", gap: 164 },
-    { topHeight: 590, bottomHeight: 130, color: "linear-gradient(45deg, #00cc66, #33cc66)", gap: 164 },
-    { topHeight: 130, bottomHeight: 590, color: "linear-gradient(45deg, #66cc00, #66ff33)", gap: 164 },
-    { topHeight: 200, bottomHeight: 520, color: "linear-gradient(45deg, #33cc33, #66cc33)", gap: 164 },
-    { topHeight: 270, bottomHeight: 450, color: "linear-gradient(45deg, #339933, #66cc66)", gap: 164 },
-    { topHeight: 450, bottomHeight: 270, color: "linear-gradient(45deg, #66cc66, #33cc33)", gap: 164 },
+    { topHeight: 360, bottomHeight: 360, color: "linear-gradient(45deg, #00ff00, #66cc66)", gap: 170 },
+    { topHeight: 520, bottomHeight: 200, color: "linear-gradient(45deg, #00cc00, #66ff66)", gap: 170 },
+    { topHeight: 590, bottomHeight: 130, color: "linear-gradient(45deg, #00cc66, #33cc66)", gap: 170 },
+    { topHeight: 130, bottomHeight: 590, color: "linear-gradient(45deg, #66cc00, #66ff33)", gap: 170 },
+    { topHeight: 200, bottomHeight: 520, color: "linear-gradient(45deg, #33cc33, #66cc33)", gap: 170 },
+    { topHeight: 270, bottomHeight: 450, color: "linear-gradient(45deg, #339933, #66cc66)", gap: 170 },
+    { topHeight: 450, bottomHeight: 270, color: "linear-gradient(45deg, #66cc66, #33cc33)", gap: 170 },
   ];
 
   const createObstacle = (x) => {
@@ -108,7 +111,7 @@ export default function Home() {
             return createObstacle(farthestX + obstacleSpacing);
           }
 
-          if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.6 - playerSize / 2) {
+          if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.4 - playerSize / 2) {
             setScore((prevScore) => prevScore + 10);
             setObstaclesPassed((prev) => prev + 1);
             return { ...obstacle, x: newX, passed: true };
@@ -146,24 +149,24 @@ export default function Home() {
   }, [velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, yPosition]);
 
   const isColliding = () => {
-    const playerX = window.innerWidth * 0.6 - playerSize / 2;
-    const playerY = yPosition;
+    const playerX = window.innerWidth * 0.4;
+    const playerY = yPosition + hitboxOffset;
 
     return obstacles.some((obstacle) => {
-      const obstacleLeft = obstacle.x;
-      const obstacleRight = obstacle.x + obstacleWidth;
+      const obstacleLeft = obstacle.x + 5;
+      const obstacleRight = obstacle.x + obstacleWidth - 5;
       const obstacleTop = obstacle.topHeight;
       const obstacleBottom = window.innerHeight - obstacle.bottomHeight;
 
       const hitTopObstacle =
-        playerX + playerSize > obstacleLeft &&
+        playerX + playerHitboxSize > obstacleLeft &&
         playerX < obstacleRight &&
         playerY < obstacleTop;
 
       const hitBottomObstacle =
-        playerX + playerSize > obstacleLeft &&
+        playerX + playerHitboxSize > obstacleLeft &&
         playerX < obstacleRight &&
-        playerY + playerSize > obstacleBottom;
+        playerY + playerHitboxSize > obstacleBottom;
 
       return hitTopObstacle || hitBottomObstacle;
     });
@@ -177,9 +180,9 @@ export default function Home() {
           <h2 style={styles.finalScore}>Final Score: {score}</h2>
           <button
             style={styles.retryButton}
-            onClick={() => window.location.reload()}
+            onClick={() => window.location.href = '/'} // Redirige a la página principal
           >
-            Try Again
+            Volver
           </button>
         </div>
       </div>
@@ -192,7 +195,7 @@ export default function Home() {
         <div
           style={{
             ...styles.countdown,
-            top: `${yPosition - 60}px`, // Asegurarse de que sea una cadena de texto correctamente interpolada
+            top: `${yPosition - 60}px`,
           }}
         >
           {countdown}
@@ -208,10 +211,11 @@ export default function Home() {
         alt="Player"
         style={{
           ...styles.circle,
-          top: `${yPosition}px`, 
+          top: `${yPosition}px`,
+          left: "40%",
           transform: "translate(-50%, 0)",
-          width: `${playerSize}px`, // Interpolación correcta
-          height: `${playerSize}px`, // Interpolación correcta
+          width: `${playerSize}px`,
+          height: `${playerSize}px`,
         }}
       />
       {obstacles.map((obstacle, index) => (
@@ -219,10 +223,10 @@ export default function Home() {
           <div
             style={{
               position: "absolute",
-              left: `${obstacle.x}px`, // Interpolación correcta
+              left: `${obstacle.x}px`,
               bottom: "0",
-              width: `${obstacleWidth}px`, // Interpolación correcta
-              height: `${obstacle.bottomHeight}px`, // Interpolación correcta
+              width: `${obstacleWidth}px`,
+              height: `${obstacle.bottomHeight}px`,
               background: obstacle.color,
               boxSizing: "border-box",
               borderRadius: "3px",
@@ -232,15 +236,15 @@ export default function Home() {
           <div
             style={{
               position: "absolute",
-              left: `${obstacle.x}px`, // Interpolación correcta
+              left: `${obstacle.x}px`,
               top: "0",
-              width: `${obstacleWidth}px`, // Interpolación correcta
-              height: `${obstacle.topHeight}px`, // Interpolación correcta
+              width: `${obstacleWidth}px`,
+              height: `${obstacle.topHeight}px`,
               background: obstacle.color,
               boxSizing: "border-box",
               borderRadius: "3px",
               boxShadow: "0 4px 6px rgba(0, 0, 0, 0.2)",
-              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`, // Interpolación correcta
+              bottom: `calc(100vh - ${obstacle.bottomHeight + obstacle.gap}px)`,
             }}
           />
         </div>

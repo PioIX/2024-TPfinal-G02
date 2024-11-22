@@ -60,7 +60,7 @@ export default function Reglas() {
             {/* Video insertado abajo de las reglas */}
             <div style={{ marginTop: '20px' }}>
                 <video width="100%" controls>
-                    <source src="/images/ejemplo.mp4" type="video/mp4" />
+                    <source src="/images/ejemploFlappy.mp4" type="video/mp4" />
                     Tu navegador no soporta el formato de video.
                 </video>
             </div>
