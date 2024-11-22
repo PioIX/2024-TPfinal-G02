@@ -1,4 +1,4 @@
-'use client';
+/*'use client';
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -35,10 +35,14 @@ export default function Reglitas() {
 
   return (
     <div className={styles.page}>
-      <h1>Flappy Multiplayer</h1>
-      <p>Jugadores conectados: {playersCount}</p>
+        <h1>
+            Flappy Multiplayer
+        </h1>
+        <p>
+            Jugadores conectados: {playersCount}
+        </p>
       <Reglas />
       <BotonDeJuego playersCount={playersCount} socket={socket} />
     </div>
   );
-}
+}*/

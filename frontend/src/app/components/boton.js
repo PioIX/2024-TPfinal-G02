@@ -1,23 +1,16 @@
 'use client';
 
-import React from "react";
+import { useRouter } from "next/navigation";
 
-export default function BotonDeJuego({ playersCount, socket }) {
+export default function BotonDeJuego() {
+  const router = useRouter();
+
   const handleStartGame = () => {
-    if (!socket) {
-      alert("Error: No se pudo conectar al servidor.");
-      return;
-    }
-
-    if (playersCount < 2) {
-      alert("Debe haber al menos 2 jugadores para iniciar el juego.");
-      return;
-    }
-
-    socket.emit("startGame");
-    console.log("🚀 Solicitando inicio del juego...");
+    // Redirige a la página /flappy cuando se haga clic en el botón
+    router.push("/flappy");
   };
 
+  // Estilo del botón (puedes ajustarlo según sea necesario)
   const buttonStyle = {
     marginTop: "20px",
     padding: "15px 30px",

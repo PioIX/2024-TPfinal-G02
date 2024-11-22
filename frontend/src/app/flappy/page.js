@@ -21,19 +21,19 @@ export default function Home() {
 
   const obstacleWidth = 60;
   const obstacleSpacing = 1000;
-  const playerSize = 90;
+  const playerSize = 80;
   const hitboxOffset = 12;
   const playerHitboxSize = playerSize - (hitboxOffset * 2);
   const player2XOffset = -100;
 
   const obstacleConfigurations = [
-    { topHeight: 280, bottomHeight: 280, gap: 65 },
-    { topHeight: 440, bottomHeight: 120, gap: 65 },
-    { topHeight: 510, bottomHeight: 50, gap: 65 },
-    { topHeight: 50, bottomHeight: 510, gap: 65 },
-    { topHeight: 120, bottomHeight: 440, gap: 65 },
-    { topHeight: 190, bottomHeight: 370, gap: 65 },
-    { topHeight: 370, bottomHeight: 190, gap: 65 },
+    { topHeight: 300, bottomHeight: 300, gap: 65 },
+    { topHeight: 460, bottomHeight: 140, gap: 65 },
+    { topHeight: 530, bottomHeight: 80, gap: 65 },
+    { topHeight: 80, bottomHeight: 530, gap: 65 },
+    { topHeight: 150, bottomHeight: 460, gap: 65 },
+    { topHeight: 210, bottomHeight: 390, gap: 65 },
+    { topHeight: 390, bottomHeight: 210, gap: 65 },
 ];
 
   const createObstacle = (x) => {
@@ -171,14 +171,14 @@ export default function Home() {
 
       if (isColliding(true) || isColliding(false)) {
         setGameOver(true);
-        if (isColliding(true)) setPlayer1Score((prevScore) => prevScore - 15);
-        if (isColliding(false)) setPlayer2Score((prevScore) => prevScore - 15);
+        if (isColliding(true)) setPlayer1Score((prevScore) => prevScore - 25);
+        if (isColliding(false)) setPlayer2Score((prevScore) => prevScore - 25);
       }
 
       if (player1Position <= 0 || player2Position <= 0) {
         setGameOver(true);
-        if (player1Position <= 0) setPlayer1Score((prevScore) => prevScore - 15);
-        if (player2Position <= 0) setPlayer2Score((prevScore) => prevScore - 15);
+        if (player1Position <= 0) setPlayer1Score((prevScore) => prevScore - 25);
+        if (player2Position <= 0) setPlayer2Score((prevScore) => prevScore - 25);
       }
     };
 
@@ -215,10 +215,10 @@ export default function Home() {
       <div style={styles.gameOverContainer}>
         <div style={styles.gameOverMessage}>
           <h1 style={styles.gameOverText}>Game Over</h1>
-          <h2 style={styles.finalScore}>Player 1 Score: {player1Score}</h2>
-          <h2 style={styles.finalScore}>Player 2 Score: {player2Score}</h2>
+          <h2 style={styles.finalScore}>Rojo Score: {player1Score}</h2>
+          <h2 style={styles.finalScore}>Azul Score: {player2Score}</h2>
           <h2 style={styles.finalScore}>
-            Winner: {player1Score > player2Score ? "Player 1" : player1Score < player2Score ? "Player 2" : "Tie!"}
+            Winner: {player1Score > player2Score ? "Rojo" : player1Score < player2Score ? "Azul" : "Tie!"}
           </h2>
           <button
             style={styles.retryButton}
@@ -339,8 +339,8 @@ export default function Home() {
         </div>
       ))}
       <div style={styles.score}>
-        <div>Player 1 Score: {player1Score}</div>
-        <div>Player 2 Score: {player2Score}</div>
+        <div>Rojo Score: {player1Score}</div>
+        <div>Azul Score: {player2Score}</div>
       </div>
     </div>
   );
