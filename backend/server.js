@@ -8,17 +8,14 @@ const io = require('socket.io')(server, {
     }
 });
 
+// Mapa para almacenar jugadores conectados
 const players = new Map();
-const gameState = {
-    started: false,
-    frontPlayerDead: false,
-    backPlayerDead: false
-};
 
 io.on('connection', (socket) => {
     console.log('🟢 Jugador conectado:', socket.id);
     players.set(socket.id, { id: socket.id, x: 0, y: 0, score: 0 });
 
+    // Emitir lista de jugadores actualizada
     io.emit('players', Array.from(players.values()));
 
     socket.on('playerJoin', (playerData) => {
@@ -31,21 +28,14 @@ io.on('connection', (socket) => {
     socket.on('startGame', () => {
         const playersArray = Array.from(players.values());
         const roles = assignRoles(playersArray);
-        gameState.started = true;
-        gameState.frontPlayerDead = false;
-        gameState.backPlayerDead = false;
         io.emit('startGame', { players: playersArray, roles });
     });
 
-    socket.on('playerDead', (role) => {
-        if (role === 'front') {
-            gameState.frontPlayerDead = true;
-        } else if (role === 'back') {
-            gameState.backPlayerDead = true;
-        }
-
-        if (gameState.frontPlayerDead && gameState.backPlayerDead) {
-            io.emit('gameOver');
+    socket.on('updatePosition', (position) => {
+        if (players.has(socket.id)) {
+            players.get(socket.id).x = position.x;
+            players.get(socket.id).y = position.y;
+            io.emit('players', Array.from(players.values()));
         }
     });
 
@@ -59,7 +49,7 @@ io.on('connection', (socket) => {
 function assignRoles(playersArray) {
     const roles = {};
     playersArray.forEach((player, index) => {
-        roles[player.id] = index === 0 ? 'front' : 'back';
+        roles[player.id] = index === 0 ? 'front' : 'back'; // Alternar roles
     });
     return roles;
 }
