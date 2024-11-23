@@ -1,60 +1,44 @@
-const express = require('express');
-const app = express();
-const server = require('http').Server(app);
-const io = require('socket.io')(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-    }
-});
+'use client';
 
-// Mapa para almacenar jugadores conectados
-const players = new Map();
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Reglas from "../components/reglas";
+import BotonDeJuego from "../components/boton";
+import io from "socket.io-client";
+import styles from './Reglitas.module.css';
 
-io.on('connection', (socket) => {
-    console.log('🟢 Jugador conectado:', socket.id);
-    players.set(socket.id, { id: socket.id, x: 0, y: 0, score: 0 });
+let socket;
 
-    // Emitir lista de jugadores actualizada
-    io.emit('players', Array.from(players.values()));
+export default function Reglitas() {
+  const [playersCount, setPlayersCount] = useState(0);
+  const router = useRouter();
 
-    socket.on('playerJoin', (playerData) => {
-        if (players.has(socket.id)) {
-            players.set(socket.id, { ...playerData, id: socket.id });
-            io.emit('players', Array.from(players.values()));
-        }
+  useEffect(() => {
+    socket = io("http://localhost:3000");
+
+    socket.on("connect", () => {
+      console.log("✅ Conectado:", socket.id);
     });
 
-    socket.on('startGame', () => {
-        const playersArray = Array.from(players.values());
-        const roles = assignRoles(playersArray);
-        io.emit('startGame', { players: playersArray, roles });
+    socket.on("players", (players) => {
+      setPlayersCount(players.length);
     });
 
-    socket.on('updatePosition', (position) => {
-        if (players.has(socket.id)) {
-            players.get(socket.id).x = position.x;
-            players.get(socket.id).y = position.y;
-            io.emit('players', Array.from(players.values()));
-        }
+    socket.on("startGame", ({ roles }) => {
+      router.push(`/flappy?role=${roles[socket.id]}`);
     });
 
-    socket.on('disconnect', () => {
-        console.log('🔴 Jugador desconectado:', socket.id);
-        players.delete(socket.id);
-        io.emit('players', Array.from(players.values()));
-    });
-});
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
-function assignRoles(playersArray) {
-    const roles = {};
-    playersArray.forEach((player, index) => {
-        roles[player.id] = index === 0 ? 'front' : 'back'; // Alternar roles
-    });
-    return roles;
+  return (
+    <div className={styles.page}>
+      <h1>Flappy Multiplayer</h1>
+      <p>Jugadores conectados: {playersCount}</p>
+      <Reglas />
+      <BotonDeJuego playersCount={playersCount} socket={socket} />
+    </div>
+  );
 }
-
-const PORT = 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
-});
