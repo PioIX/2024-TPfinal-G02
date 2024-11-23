@@ -1,14 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from 'next/navigation';
-import io from "socket.io-client";
+import { useRouter } from 'next/router';
 
 export default function Home() {
-  const searchParams = useSearchParams();
-  const role = searchParams.get('role');
-  const [socket, setSocket] = useState(null);
-
   const [player1Position, setPlayer1Position] = useState(0);
   const [player2Position, setPlayer2Position] = useState(0);
   const [player1Velocity, setPlayer1Velocity] = useState(0);
@@ -67,37 +62,12 @@ export default function Home() {
       if (isPlayer1) {
         setPlayer1Velocity(-9);
         setPlayer1Score((prevScore) => prevScore + 1);
-        socket?.emit('playerJump', { role: 'front', velocity: -9 });
       } else {
         setPlayer2Velocity(-9);
         setPlayer2Score((prevScore) => prevScore + 1);
-        socket?.emit('playerJump', { role: 'back', velocity: -9 });
       }
     }
   };
-
-  useEffect(() => {
-    const socket = io("http://localhost:3000");
-    setSocket(socket);
-
-    socket.on('gameOver', () => {
-      setGameOver(true);
-    });
-
-    socket.on('syncPlayerPosition', (data) => {
-      if (data.role === 'front' && role !== 'front') {
-        setPlayer1Position(data.position);
-        setPlayer1Velocity(data.velocity);
-      } else if (data.role === 'back' && role !== 'back') {
-        setPlayer2Position(data.position);
-        setPlayer2Velocity(data.velocity);
-      }
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, [role]);
 
   useEffect(() => {
     const initialY = window.innerHeight / 2 - playerSize / 2;
@@ -107,13 +77,13 @@ export default function Home() {
   }, []);
 
   const handleClick = () => {
-    if (!gameOver && role === 'front') {
+    if (!gameOver) {
       jump(true);
     }
   };
 
   const handleKeyPress = (event) => {
-    if (event.code === 'Space' && !gameOver && role === 'back') {
+    if (event.code === 'Space' && !gameOver) {
       event.preventDefault();
       jump(false);
     }
@@ -126,7 +96,7 @@ export default function Home() {
       window.removeEventListener("click", handleClick);
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [gameOver, role]);
+  }, [gameOver]);
 
   useEffect(() => {
     if (!gameStarted) {
@@ -146,33 +116,20 @@ export default function Home() {
     const gameLoop = () => {
       if (gameOver) return;
 
-      const updatePosition = (prev, velocity) => {
-        const newY = prev + velocity;
+      setPlayer1Velocity((prev) => prev + gravity);
+      setPlayer2Velocity((prev) => prev + gravity);
+
+      setPlayer1Position((prev) => {
+        const newY = prev + player1Velocity;
         if (newY > window.innerHeight - playerSize) return window.innerHeight - playerSize;
         return newY < 0 ? 0 : newY;
-      };
+      });
 
-      if (role === 'front') {
-        setPlayer1Velocity((prev) => prev + gravity);
-        const newPlayer1Position = updatePosition(player1Position, player1Velocity);
-        setPlayer1Position(newPlayer1Position);
-        socket?.emit('syncPlayerPosition', { 
-          role: 'front', 
-          position: newPlayer1Position, 
-          velocity: player1Velocity 
-        });
-      }
-
-      if (role === 'back') {
-        setPlayer2Velocity((prev) => prev + gravity);
-        const newPlayer2Position = updatePosition(player2Position, player2Velocity);
-        setPlayer2Position(newPlayer2Position);
-        socket?.emit('syncPlayerPosition', { 
-          role: 'back', 
-          position: newPlayer2Position, 
-          velocity: player2Velocity 
-        });
-      }
+      setPlayer2Position((prev) => {
+        const newY = prev + player2Velocity;
+        if (newY > window.innerHeight - playerSize) return window.innerHeight - playerSize;
+        return newY < 0 ? 0 : newY;
+      });
 
       setObstacles((currentObstacles) => {
         let newObstacles = currentObstacles.map((obstacle) => {
@@ -186,17 +143,13 @@ export default function Home() {
           let updatedObstacle = { ...obstacle, x: newX };
 
           if (!obstacle.passed && newX + obstacleWidth < window.innerWidth * 0.4 - playerSize / 2) {
-            if (role === 'front') {
-              setPlayer1Score((prevScore) => prevScore + 10);
-              setObstaclesPassed((prev) => prev + 1);
-            }
+            setPlayer1Score((prevScore) => prevScore + 10);
+            setObstaclesPassed((prev) => prev + 1);
             updatedObstacle.passed = true;
           }
 
           if (!obstacle.passedByPlayer2 && newX + obstacleWidth < window.innerWidth * 0.4 - playerSize / 2 + player2XOffset) {
-            if (role === 'back') {
-              setPlayer2Score((prevScore) => prevScore + 10);
-            }
+            setPlayer2Score((prevScore) => prevScore + 10);
             updatedObstacle.passedByPlayer2 = true;
           }
 
@@ -216,24 +169,22 @@ export default function Home() {
         setSpeedIncreased(false);
       }
 
-      if (isColliding(role === 'front')) {
+      if (isColliding(true) || isColliding(false)) {
         setGameOver(true);
-        socket?.emit('playerDead', role);
-        if (role === 'front') setPlayer1Score((prevScore) => prevScore - 15);
-        if (role === 'back') setPlayer2Score((prevScore) => prevScore - 15);
+        if (isColliding(true)) setPlayer1Score((prevScore) => prevScore - 15);
+        if (isColliding(false)) setPlayer2Score((prevScore) => prevScore - 15);
       }
 
-      if ((role === 'front' && player1Position <= 0) || (role === 'back' && player2Position <= 0)) {
+      if (player1Position <= 0 || player2Position <= 0) {
         setGameOver(true);
-        socket?.emit('playerDead', role);
-        if (role === 'front') setPlayer1Score((prevScore) => prevScore - 15);
-        if (role === 'back') setPlayer2Score((prevScore) => prevScore - 15);
+        if (player1Position <= 0) setPlayer1Score((prevScore) => prevScore - 15);
+        if (player2Position <= 0) setPlayer2Score((prevScore) => prevScore - 15);
       }
     };
 
     const interval = setInterval(gameLoop, 16);
     return () => clearInterval(interval);
-  }, [player1Velocity, player2Velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, player1Position, player2Position, role, socket]);
+  }, [player1Velocity, player2Velocity, gravity, speed, gameOver, gameStarted, countdown, obstacles, obstaclesPassed, speedIncreased, player1Position, player2Position]);
 
   const isColliding = (isPlayer1) => {
     const playerX = window.innerWidth * 0.4 + (isPlayer1 ? 0 : player2XOffset);
