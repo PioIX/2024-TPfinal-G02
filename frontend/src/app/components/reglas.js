@@ -43,7 +43,7 @@ export default function Reglas() {
             onMouseOver={() => setHover(true)}
             onMouseOut={() => setHover(false)}
         >
-            <h2 style={headingStyle}>Reglas</h2>
+            <h2 style={headingStyle}>Flappy Bird</h2>
             <p style={ruleTextStyle}>
                 <b>Regla 1:</b> Cada salto vale 1 punto y pasar por el obstáculo 20 y perder te saca 15.
             </p>
@@ -55,6 +55,12 @@ export default function Reglas() {
             </p>
             <p style={ruleTextStyle}>
                 <b>Regla 4:</b> Quien consiga más <b>puntos gana!</b>
+            </p>
+            <p style={ruleTextStyle}>
+                <b>Regla 5:</b> Uno juega con el espacio y controla el de atras (El azul)
+            </p>
+            <p style={ruleTextStyle}>
+                <b>Regla 6:</b> Otro juega con el click y controla el de adelante (El rojo)
             </p>
             <h2 style={headingStyle}>Ejemplo del juego:</h2>
             {/* Video insertado abajo de las reglas */}
