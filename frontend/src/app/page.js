@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Reglas from "../components/reglas";
-import BotonDeJuego from "../components/boton";
+import Reglas from "./components/reglas";
+import BotonDeJuego from "./components/boton";
 import io from "socket.io-client";
-import styles from './Reglitas.module.css';
+import styles from './page.module.css';
 
 let socket;
 
@@ -25,13 +25,15 @@ export default function Reglitas() {
     });
 
     socket.on("startGame", ({ roles }) => {
-      router.push(`/flappy?role=${roles[socket.id]}`);
+      const role = roles[socket.id];
+      console.log(`🎮 Rol asignado: ${role}`);
+      router.push(`/flappy?role=${role}`); // Redirige según el rol
     });
 
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [router]);
 
   return (
     <div className={styles.page}>
