@@ -11,17 +11,15 @@ export default function BotonDeJuego({ playersCount, socket }) {
       return;
     }
 
-    if (playersCount < 2) {
-      alert("Debe haber al menos 2 jugadores para iniciar el juego.");
+    if (playersCount !== 2) {
+      alert("Debe haber exactamente 2 jugadores para iniciar el juego.");
       return;
     }
 
-    // Emitir evento para iniciar el juego
     socket.emit("startGame");
     console.log("🚀 Solicitando inicio del juego...");
   };
 
-  // Estilos del botón (incluye hover dinámico)
   const buttonStyle = {
     marginTop: "20px",
     padding: "15px 30px",
@@ -34,16 +32,16 @@ export default function BotonDeJuego({ playersCount, socket }) {
     cursor: "pointer",
     textTransform: "uppercase",
     letterSpacing: "1px",
-    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)", // Sombra sutil
-    transition: "background-color 0.3s, color 0.3s", // Transición suave
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    transition: "background-color 0.3s, color 0.3s",
   };
 
   return (
     <button
       style={buttonStyle}
       onClick={handleStartGame}
-      onMouseEnter={() => setIsHovered(true)} // Activar hover
-      onMouseLeave={() => setIsHovered(false)} // Desactivar hover
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       A Jugar
     </button>

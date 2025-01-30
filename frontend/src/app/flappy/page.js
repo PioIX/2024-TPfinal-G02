@@ -270,9 +270,7 @@ export default function Home() {
           transform: "translate(-50%, 0)",
           width: `${playerSize}px`,
           height: `${playerSize}px`,
-          filter: `hue-rotate(240deg)
-            brightness(1.2)    
-            contrast(1.3)` ,
+          filter: "hue-rotate(240deg) brightness(1.2) contrast(1.3)",
         }}
       />
       
@@ -383,50 +381,41 @@ const styles = {
     backgroundColor: "rgba(0, 0, 0, 0.6)",
     borderRadius: "8px",
     boxShadow: "0 4px 8px rgba(0, 0, 0, 0.4)",
-    border: "2px solid #FFD700",
-    textAlign: "center",
-    zIndex: 2,
+    border: "2px solid #fffb00",
+    zIndex: 10,
   },
   gameOverContainer: {
     position: "absolute",
     top: "0",
     left: "0",
-    width: "100vw",
-    height: "100vh",
-    backgroundColor: "#d32f2f",
+    width: "100%",
+    height: "100%",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    flexDirection: "column",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
   },
   gameOverMessage: {
     textAlign: "center",
+    color: "#ffffff",
+    fontSize: "36px",
+    fontWeight: "bold",
   },
   gameOverText: {
-    fontSize: "120px", // Texto grande.
-    color: "white", 
-    fontWeight: "bold", // Negrita para mayor visibilidad.
-    marginBottom: "20px", // Espaciado inferior para separación.
-    textShadow: "5px 5px 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.6), 0 0 5px rgba(0, 0, 0, 0.5)", // Más sombra para dar efecto de profundidad.
-    fontFamily: "Courier New, Courier, monospace", 
-    textTransform: "uppercase", // Todo en mayúsculas.
+    fontSize: "60px",
+    margin: "20px 0",
   },
   finalScore: {
-    fontSize: "40px",
-    color: "white",
-    fontWeight: "bold", // Negrita para mayor visibilidad.
-    marginBottom: "20px",
-    fontFamily: "Courier New, Courier, monospace",
-    fontWeight: "bold",
-    textTransform: "uppercase", // Todo en mayúsculas.
+    fontSize: "24px",
+    margin: "10px 0",
   },
   retryButton: {
-    padding: "15px 30px",
-    fontSize: "20px",
-    backgroundColor: "#ffeb3b",
-    color: "#d32f2f",
+    backgroundColor: "#fffb00",
+    padding: "12px 24px",
+    fontSize: "24px",
     border: "none",
-    borderRadius: "5px",
+    borderRadius: "8px",
     cursor: "pointer",
+    marginTop: "20px",
   },
 };
